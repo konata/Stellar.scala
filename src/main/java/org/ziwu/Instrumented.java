@@ -10,9 +10,6 @@ public class Instrumented {
         app.first = new KeyboardEvents(); // first allocation
         app.second = new MouseEvents(); // second allocation
 
-
-
-
         Instrumented app1 = new Instrumented();
         app1.first = new KeyboardEvents(); // third allocation
         app1.second = new MouseEvents(); // fourth allocation

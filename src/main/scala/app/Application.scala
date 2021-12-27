@@ -44,11 +44,14 @@ object Application {
       // [Store] foo.bar = b
       case SAssignStmt(SInstanceFieldRef(left, field), right) => println("store", left, field, right)
       // [Call]  b = a.foo()
+      // [Static Call / Special Call / Virtual Call]
       case SAssignStmt(left, SInvokeExpr(base, args, method)) => println("assign-call", left, base, method, args)
       // [Assign] b = a
       case SAssignStmt(left, right) => println("assign", left, right)
+      /*
       // [Vanilla Call] bar.foo(foo)
       case SInvokeExpr(base, args, method) => println("vanilla-call", base, method, args)
+      */
       case other => println("***", other, other.getClass)
     }
   }
