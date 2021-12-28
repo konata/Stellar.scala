@@ -38,28 +38,47 @@ val x = bar.baz(x,y,... )
 ### New
 
 `val x = new Bar() // at line i`
-$$` \frac {} {o_i \in pt(x)} `$$
+
+```math
+\frac {} {o_i \in pt(x)}
+```
+
+$$ \frac {} {o_i \in pt(x)} $$
 
 ### Assign
 
 `val x = y`
-$$` \frac {o_i \in pt(y)} {o_i \in pt(x)} `$$
+
+```math
+\frac {o_i \in pt(y)} {o_i \in pt(x)} $$
+```
+
+$$ \frac {o_i \in pt(y)} {o_i \in pt(x)} $$
 
 ### Store
 
 `x.foo = y`
 
-$$` \frac { o_i \in pt(x), o_j \in pt(y)} { o_j \in pt(o_i.foo) } `$$
+```math
+\frac { o_i \in pt(x), o_j \in pt(y)} { o_j \in pt(o_i.foo) }
+```
+
+$$ \frac { o_i \in pt(x), o_j \in pt(y)} { o_j \in pt(o_i.foo) } $$
 
 ### Load
 
 `val x = y.foo`
-$$` \frac {o_i \in pt(y), o_j \in(o_i.foo)} { o_j \in pt(x)} `$$
+
+```math
+\frac {o_i \in pt(y), o_j \in(o_i.foo)} { o_j \in pt(x)}
+```
+
+$$ \frac {o_i \in pt(y), o_j \in(o_i.foo)} { o_j \in pt(x)} $$
 
 ### Call
 
 `val foo = bar.baz(...)`
-$$` call `$$
+$$ call $$
 
 ## Fixed Point Theorem & Lattice
 
