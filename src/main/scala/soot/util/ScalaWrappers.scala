@@ -1,6 +1,6 @@
 package soot.util
 
-import soot.{AnySubType, ArrayType, Body, ClassMember, Context, FastHierarchy, Hierarchy, Local, MethodSource, Modifier, PatchingChain, PointsToAnalysis, RefType, Scene, SootClass, SootField, SootFieldRef, SootMethod, SootMethodRef, Trap, Type, Value}
+import soot.{AnySubType, ArrayType, Body, ClassMember, Context, FastHierarchy, Hierarchy, Local, MethodSource, Modifier, PatchingChain, PointsToAnalysis, RefType, Scene, SootClass, SootField, SootFieldRef, SootMethod, SootMethodRef, Trap, Type, Value, ValueBox}
 
 import java.io.File
 import java.nio.file.Path
@@ -723,7 +723,7 @@ object ScalaWrappers {
      * @param as the assign statement
      * @return (left op, right op)
      */
-    def unapply(as: AssignStmt): Option[(Value, Value)] = Some(as.leftOp, as.rightOp)
+    def unapply(as: AssignStmt) = Some(as.leftOp, as.rightOp)
   }
 
   implicit class RichAssignStmt(val v: AssignStmt) extends AnyVal {
