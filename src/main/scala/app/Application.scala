@@ -64,14 +64,12 @@ object Application {
       // [Alloc] foo = new Foo()
       case statement@SAssignStmt(allocated, SNewExpr(baseType)) =>
         val use = statement.getUseBoxes.asScala.head
-        println("alloc", allocated, s"use:$use ${baseType.className}#${statement.lineNumber}")
         env.getOrElseUpdate(Var(allocated), mutable.Set()).add(
           Allocation(statement.lineNumber, baseType.getClassName)
         )
 
       // [Store] foo.bar = b
       case SAssignStmt(SInstanceFieldRef(left, field), right) =>
-        println("store", left, field, right)
         val pending = env(Var(right))
         env(Var(left)).foreach(it => env.getOrElseUpdate(FieldReference(it, field.makeRef()), mutable.Set()).addAll(pending))
 
@@ -80,28 +78,27 @@ object Application {
         val pending = env(Var(right)).flatMap(it => env(FieldReference(it, field.makeRef())))
         env.getOrElseUpdate(Var(left), mutable.Set()).addAll(pending)
 
+      // [Assign] b = a
+      case SAssignStmt(left, right) =>
+        env.getOrElseUpdate(Var(left), mutable.Set()).addAll(env(Var(right)))
+
       // [VanillaCall] bar.foo(foo)
-      case SInvokeExpr(base, args, method) =>
-        println("TODO: vanilla-call", base, method, args)
+      case SInvokeExpr(base, args, method) => ???
 
       // [Call]  b = a.foo()
       // [Static Call / Special Call / Virtual Call]
-      case SAssignStmt(left, SInvokeExpr(base, args, method)) =>
-        println("TODO: assign-call", left, base, method, args)
+      case SAssignStmt(left, SInvokeExpr(base, args, method)) => ???
 
-      // [Assign] b = a
-      case SAssignStmt(left, right) =>
-        println("assign", left, right)
-        env.getOrElseUpdate(Var(left), mutable.Set()).addAll(env(Var(right)))
-
-      case other => () // println("***", other, other.getClass)
+      // ignored cases
+      case _ => () // println("***", other, other.getClass)
     }
 
-    println("*******")
-
+    // strip out stack var
     println(env.view.filterKeys {
       case Var(SLocal(v)) => !v._1.startsWith("$")
       case _ => true
-    }.toList.map { case (k, v) => s"$k->$v" }.mkString("\n"))
+    }.mkString("\n"))
   }
+
+
 }
