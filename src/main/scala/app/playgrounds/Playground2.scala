@@ -2,7 +2,6 @@
 //
 //import scalax.collection.GraphEdge.{DiEdge, ~>}
 //import scalax.collection.GraphPredef.{EdgeAssoc, edgeSetToOuter}
-//import scalax.collection.io.dot.{DotAttr, DotAttrStmt, DotEdgeStmt, DotGraph, DotNodeStmt, DotRootGraph, Elem, Id, NodeId, graph2DotExport}
 //import scalax.collection.mutable.Graph
 //
 //import scala.collection.mutable

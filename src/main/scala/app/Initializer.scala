@@ -25,8 +25,9 @@ object Initializer {
   }
 
   def bodyOf[T: ClassTag](name: String) = {
-    val clazz = Scene.v().getSootClass(implicitly[ClassTag[T]].runtimeClass.getName)
-    val body  = clazz.methods.find(_.getName.contains(name)).head.retrieveActiveBody()
-    body
+    val clazz  = Scene.v().getSootClass(implicitly[ClassTag[T]].runtimeClass.getName)
+    val method = clazz.methods.find(_.getName.contains(name)).head
+    val body   = method.retrieveActiveBody()
+    (method, body)
   }
 }
