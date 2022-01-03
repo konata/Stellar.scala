@@ -9,7 +9,7 @@ import soot.util.ScalaWrappers.{RichBody, RichChain, RichHost, SAssignStmt, SIns
 import scala.collection.{immutable, mutable}
 import scala.reflect.ClassTag
 
-case class IntraProceduralSolver[T: ClassTag](methodName: String) {
+case class IntraProceduralSolver[T: ClassTag](val methodName: String) {
   type PointerFlowGraph            = Graph[Pointer, DiEdge]
   type MutablePointerAllocationMap = mutable.Map[Pointer, mutable.Set[Allocation]]
 
@@ -41,10 +41,10 @@ case class IntraProceduralSolver[T: ClassTag](methodName: String) {
         ele match {
           // x.foo = y
           case SAssignStmt(SInstanceFieldRef(SLocal(self), field), SLocal(y)) =>
-            (stores + ((InstanceMember(self._1, field.getName), VarPointer(y._1))), loads)
+            (stores + ((InstanceMember(self._1, field.getName), VarPointer(methodName, y._1))), loads)
           // y = x.foo
           case SAssignStmt(SLocal(y), SInstanceFieldRef(SLocal(self), field)) =>
-            (stores, loads + ((VarPointer(y._1), InstanceMember(self._1, field.getName))))
+            (stores, loads + ((VarPointer(methodName, y._1), InstanceMember(self._1, field.getName))))
           case _ => acc
         }
     }
@@ -52,14 +52,14 @@ case class IntraProceduralSolver[T: ClassTag](methodName: String) {
     worklist.addAll(bodies.units.foldLeft(mutable.Map[Pointer, mutable.Set[Allocation]]().withDefaultValue(mutable.Set[Allocation]())) { (acc, ele) =>
       ele match {
         case SAssignStmt(SLocal(allocated, _), SNewExpr(baseType)) =>
-          acc.getOrElseUpdate(VarPointer(allocated), mutable.Set()).add(Allocation(ele.lineNumber, baseType.toString))
+          acc.getOrElseUpdate(VarPointer(methodName, allocated), mutable.Set()).add(Allocation(ele.lineNumber, baseType.toString))
         case _ => ()
       }
       acc
     })
 
     bodies.units.foreach {
-      case SAssignStmt(SLocal(left, _), SLocal(right, _)) => addEdge(VarPointer(right), VarPointer(left))
+      case SAssignStmt(SLocal(left, _), SLocal(right, _)) => addEdge(VarPointer(methodName, right), VarPointer(methodName, left))
       case _                                              => ()
     }
 
@@ -70,7 +70,7 @@ case class IntraProceduralSolver[T: ClassTag](methodName: String) {
       propagate(pointer, delta)
 
       pointer match {
-        case VarPointer(variable) =>
+        case variable @ VarPointer(_, _) =>
           delta.foreach { delta =>
             stores.filter(_._1.name == variable).foreach { store => addEdge(store._2, FieldPointer(delta, store._1.field)) }
             loads.filter(_._2.name == variable).foreach { load => addEdge(FieldPointer(delta, load._2.field), load._1) }
