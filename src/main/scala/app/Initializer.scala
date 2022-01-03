@@ -10,7 +10,7 @@ import scala.reflect.ClassTag
 object Initializer {
   private val pattern = ".*pointsto.*jar$".r
   val excludes        = """soot.* java.* javax.* scala.*""".split(raw"""\s+""").filter(_.nonEmpty)
-  val instrumentsPath = new File("./target/scala-2.13/").listFiles.filter(it => pattern.matches(it.getName)).map(_.getAbsolutePath)
+  val instrumentsPath = new File("target/scala-2.13/").listFiles.filter(it => pattern.matches(it.getName)).map(_.getAbsolutePath)
 
   def initialize() = {
     G.reset()
@@ -25,7 +25,7 @@ object Initializer {
   }
 
   def bodyOf[T: ClassTag](name: String) = {
-    val clazz  = Scene.v().getSootClass(implicitly[ClassTag[T]].runtimeClass.getName)
+    val clazz  = Scene.v().getSootClassUnsafe(implicitly[ClassTag[T]].runtimeClass.getName)
     val method = clazz.methods.find(_.getName.contains(name)).head
     val body   = method.retrieveActiveBody()
     (method, body)

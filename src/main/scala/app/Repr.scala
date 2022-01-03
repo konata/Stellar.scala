@@ -11,3 +11,5 @@ case class VarPointer(local: String) extends Pointer {
 case class FieldPointer(alloc: Allocation, fieldName: String) extends Pointer {
   override def toString = s"($alloc).${fieldName}" // (10@Foo).bar
 }
+
+case class InstanceMember(name: String, field: String)
