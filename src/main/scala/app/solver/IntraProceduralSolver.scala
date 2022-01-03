@@ -41,10 +41,10 @@ case class IntraProceduralSolver[T: ClassTag](val methodName: String) {
         ele match {
           // x.foo = y
           case SAssignStmt(SInstanceFieldRef(SLocal(self), field), SLocal(y)) =>
-            (stores + ((InstanceMember(self._1, field.getName), VarPointer(methodName, y._1))), loads)
+            (stores + ((InstanceMember(VarPointer(methodName, self._1), field.getName), VarPointer(methodName, y._1))), loads)
           // y = x.foo
           case SAssignStmt(SLocal(y), SInstanceFieldRef(SLocal(self), field)) =>
-            (stores, loads + ((VarPointer(methodName, y._1), InstanceMember(self._1, field.getName))))
+            (stores, loads + ((VarPointer(methodName, y._1), InstanceMember(VarPointer(methodName, self._1), field.getName))))
           case _ => acc
         }
     }
@@ -72,8 +72,8 @@ case class IntraProceduralSolver[T: ClassTag](val methodName: String) {
       pointer match {
         case variable @ VarPointer(_, _) =>
           delta.foreach { delta =>
-            stores.filter(_._1.name == variable).foreach { store => addEdge(store._2, FieldPointer(delta, store._1.field)) }
-            loads.filter(_._2.name == variable).foreach { load => addEdge(FieldPointer(delta, load._2.field), load._1) }
+            stores.filter(_._1.instance == variable).foreach { store => addEdge(store._2, FieldPointer(delta, store._1.field)) }
+            loads.filter(_._2.instance == variable).foreach { load => addEdge(FieldPointer(delta, load._2.field), load._1) }
           }
         case _ => None
       }
