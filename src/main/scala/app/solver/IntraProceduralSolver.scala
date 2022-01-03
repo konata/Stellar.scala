@@ -72,8 +72,8 @@ case class IntraProceduralSolver[T: ClassTag](val methodName: String) {
       pointer match {
         case variable @ VarPointer(_, _) =>
           delta.foreach { delta =>
-            stores.filter(_._1.instance == variable).foreach { store => addEdge(store._2, FieldPointer(delta, store._1.field)) }
-            loads.filter(_._2.instance == variable).foreach { load => addEdge(FieldPointer(delta, load._2.field), load._1) }
+            stores.filter(_._1.receiver == variable).foreach { store => addEdge(store._2, FieldPointer(delta, store._1.field)) }
+            loads.filter(_._2.receiver == variable).foreach { load => addEdge(FieldPointer(delta, load._2.field), load._1) }
           }
         case _ => None
       }
