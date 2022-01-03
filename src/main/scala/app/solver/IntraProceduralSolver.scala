@@ -1,6 +1,6 @@
 package app.solver
 
-import app.{Allocation, FieldPointer, Initializer, InstanceMember, Pointer, VarPointer}
+import app.{Allocation, Choreographer, FieldPointer, Initializer, InstanceMember, Pointer, VarPointer}
 import scalax.collection.GraphEdge.{DiEdge, ~>}
 import scalax.collection.GraphPredef.EdgeAssoc
 import scalax.collection.mutable.Graph
@@ -84,5 +84,8 @@ case class IntraProceduralSolver[T: ClassTag](methodName: String) {
       println(graph)
       println()
     }
+
+    Choreographer.dump(graph, env.toMap)
+
   }
 }
