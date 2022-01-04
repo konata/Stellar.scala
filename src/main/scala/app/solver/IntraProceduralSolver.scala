@@ -1,6 +1,6 @@
 package app.solver
 
-import app.{Allocation, Choreographer, FieldPointer, Initializer, InstanceMember, Pointer, VarPointer}
+import app.{Allocation, Choreographer, FieldPointer, Initializer, VarField, Pointer, VarPointer}
 import scalax.collection.GraphEdge.{DiEdge, ~>}
 import scalax.collection.GraphPredef.EdgeAssoc
 import scalax.collection.mutable.Graph
@@ -35,18 +35,17 @@ case class IntraProceduralSolver[T: ClassTag](val methodName: String) {
   }
 
   def analysis() = {
-    val (stores, loads) = bodies.units.foldLeft(immutable.Set[(InstanceMember, VarPointer)](), immutable.Set[(VarPointer, InstanceMember)]()) {
-      (acc, ele) =>
-        val (stores, loads) = acc
-        ele match {
-          // x.foo = y
-          case SAssignStmt(SInstanceFieldRef(SLocal(self), field), SLocal(y)) =>
-            (stores + ((InstanceMember(VarPointer(methodName, self._1), field.getName), VarPointer(methodName, y._1))), loads)
-          // y = x.foo
-          case SAssignStmt(SLocal(y), SInstanceFieldRef(SLocal(self), field)) =>
-            (stores, loads + ((VarPointer(methodName, y._1), InstanceMember(VarPointer(methodName, self._1), field.getName))))
-          case _ => acc
-        }
+    val (stores, loads) = bodies.units.foldLeft(immutable.Set[(VarField, VarPointer)](), immutable.Set[(VarPointer, VarField)]()) { (acc, ele) =>
+      val (stores, loads) = acc
+      ele match {
+        // x.foo = y
+        case SAssignStmt(SInstanceFieldRef(SLocal(self, _), field), SLocal(name, _)) =>
+          (stores + ((VarField(VarPointer(methodName, self), field.getName), VarPointer(methodName, name))), loads)
+        // y = x.foo
+        case SAssignStmt(SLocal(name, _), SInstanceFieldRef(SLocal(self, _), field)) =>
+          (stores, loads + ((VarPointer(methodName, name), VarField(VarPointer(methodName, self), field.getName))))
+        case _ => acc
+      }
     }
 
     worklist.addAll(bodies.units.foldLeft(mutable.Map[Pointer, mutable.Set[Allocation]]().withDefaultValue(mutable.Set[Allocation]())) { (acc, ele) =>
