@@ -1,6 +1,31 @@
 package soot.util
 
-import soot.{AnySubType, ArrayType, Body, ClassMember, Context, FastHierarchy, Hierarchy, Local, MethodSource, Modifier, PatchingChain, PointsToAnalysis, RefType, Scene, SootClass, SootField, SootFieldRef, SootMethod, SootMethodRef, Trap, Type, Value, ValueBox}
+import app.{Allocation, VarPointer}
+import soot.{
+  AnySubType,
+  ArrayType,
+  Body,
+  ClassMember,
+  Context,
+  FastHierarchy,
+  Hierarchy,
+  Local,
+  MethodSource,
+  Modifier,
+  PatchingChain,
+  PointsToAnalysis,
+  RefType,
+  Scene,
+  SootClass,
+  SootField,
+  SootFieldRef,
+  SootMethod,
+  SootMethodRef,
+  Trap,
+  Type,
+  Value,
+  ValueBox
+}
 
 import java.io.File
 import java.nio.file.Path
@@ -12,6 +37,7 @@ import soot.options.Options
 import soot.tagkit._
 import soot.toolkits.exceptions.ThrowAnalysis
 
+import scala.+:
 import scala.jdk.CollectionConverters._
 import scala.util.Try
 
@@ -27,13 +53,16 @@ object ScalaWrappers {
   }
 
   object SSootClass {
-    def apply(name: String, modifiers: Int = Modifier.PUBLIC,
-              fields: Iterable[SootField] = Iterable(),
-              interfaces: Iterable[SootClass] = Iterable(),
-              superClass: Option[SootClass] = None,
-              methods: Iterable[SootMethod] = Iterable(),
-              outerClass: Option[SootClass] = None,
-              annotations: Iterable[AnnotationTag] = Iterable()): SootClass = {
+    def apply(
+        name: String,
+        modifiers: Int = Modifier.PUBLIC,
+        fields: Iterable[SootField] = Iterable(),
+        interfaces: Iterable[SootClass] = Iterable(),
+        superClass: Option[SootClass] = None,
+        methods: Iterable[SootMethod] = Iterable(),
+        outerClass: Option[SootClass] = None,
+        annotations: Iterable[AnnotationTag] = Iterable()
+    ): SootClass = {
       val sc = new SootClass(name, modifiers)
       superClass.foreach(sc.superclass = _)
       outerClass.foreach(sc.outerClass = _)
@@ -193,10 +222,9 @@ object ScalaWrappers {
 
     @inline def declaration = v.getDeclaration
 
-    /**
-     * @return A field signature that is formatted a bit different than the Soot signature.
-     *         It consists of the class' name, followed by '.' and the field name.
-     */
+    /** @return A field signature that is formatted a bit different than the Soot signature.
+      *         It consists of the class' name, followed by '.' and the field name.
+      */
     @inline def quasiSignature = v.getDeclaringClass.getName + "." + v.getName
 
     @inline def typ = v.getType
@@ -248,6 +276,22 @@ object ScalaWrappers {
       v.setDeclared(true)
     }
 
+    // forall `val x = new Bar()`
+    @inline def allocations: Set[(VarPointer, Allocation)] = units.foldLeft(Set[(VarPointer, Allocation)]()) { (acc, ele) =>
+      acc ++ (ele match {
+        case SAssignStmt(SLocal(allocated, _), SNewExpr(baseType)) => Some(VarPointer(name, allocated), Allocation(ele.lineNumber, baseType.toString))
+        case _                                                     => None
+      }).toSet
+    }
+
+    // forall `val x = y`
+    @inline def assigns: Set[(VarPointer, VarPointer)] = units.foldLeft(Set[(VarPointer, VarPointer)]()) { (acc, ele) =>
+      acc ++ (ele match {
+        case SAssignStmt(SLocal(assignee, _), SLocal(assigner, _)) => Some(VarPointer(name, assignee), VarPointer(name, assigner))
+        case _                                                     => None
+      }).toSet
+    }
+
     @inline def locals = if (v.hasActiveBody) v.body.getLocals else new HashChain[Local]()
 
     @inline def units = if (v.hasActiveBody) v.body.getUnits else new HashChain[SootUnit]()
@@ -268,7 +312,6 @@ object ScalaWrappers {
 
     @inline def paramTypes = v.getParameterTypes.asScala
   }
-
 
   implicit class RichTrap(val v: Trap) extends AnyVal {
     @inline def beginUnit = v.getBeginUnit
@@ -494,7 +537,7 @@ object ScalaWrappers {
     @inline def lineNumber = v.getJavaSourceStartLineNumber
 
     @inline def lineNumberOpt: Option[Int] = v.getJavaSourceStartLineNumber match {
-      case -1 => None
+      case -1  => None
       case any => Some(any)
     }
 
@@ -523,10 +566,9 @@ object ScalaWrappers {
   object SAnnotationTag {
     def apply(name: String, elements: Seq[AnnotationElem] = Seq()) = new AnnotationTag(name, elements.asJava)
 
-    /**
-     * @param at the `AnnotationTag`
-     * @return a tuple with (annotation name, information, elements)
-     */
+    /** @param at the `AnnotationTag`
+      * @return a tuple with (annotation name, information, elements)
+      */
     def unapply(at: AnnotationTag) = Some(at.name, at.info, at.elements)
   }
 
@@ -557,14 +599,14 @@ object ScalaWrappers {
   }
 
   object SInvokeExpr {
-    /**
-     * @param expr the expression
-     * @return a tuple with (an `Option` to the base variable, the sequence of arguments, the target method)
-     */
+
+    /** @param expr the expression
+      * @return a tuple with (an `Option` to the base variable, the sequence of arguments, the target method)
+      */
     def unapply(expr: InvokeExpr) = expr match {
-      case SStaticInvokeExpr(args, method) => Some(None, args, method)
+      case SStaticInvokeExpr(args, method)         => Some(None, args, method)
       case SInstanceInvokeExpr(base, args, method) => Some(Some(base), args, method)
-      case _ => throw new RuntimeException("Unhandled invoke expression type")
+      case _                                       => throw new RuntimeException("Unhandled invoke expression type")
     }
   }
 
@@ -590,24 +632,21 @@ object ScalaWrappers {
   object SStaticInvokeExpr {
     def apply(args: Seq[Value], target: SootMethod): StaticInvokeExpr = Jimple.v.newStaticInvokeExpr(target.makeRef(), args.asJava)
 
-    /**
-     * @param expr the expression
-     * @return a tuple with (the sequence of arguments, the target method)
-     */
+    /** @param expr the expression
+      * @return a tuple with (the sequence of arguments, the target method)
+      */
     def unapply(expr: StaticInvokeExpr) = Some(expr.args, expr.method)
   }
-
 
   object SInstanceInvokeExpr {
     def apply(base: Local, args: Seq[Value], target: SootMethod): InstanceInvokeExpr = target.declaringClass match {
       case interface if interface.isInterface => Jimple.v.newInterfaceInvokeExpr(base, target.makeRef(), args.asJava)
-      case _ => Jimple.v.newVirtualInvokeExpr(base, target.makeRef(), args.asJava)
+      case _                                  => Jimple.v.newVirtualInvokeExpr(base, target.makeRef(), args.asJava)
     }
 
-    /**
-     * @param expr the expression
-     * @return a tuple with (the base variable, the sequence of arguments, the target method)
-     */
+    /** @param expr the expression
+      * @return a tuple with (the base variable, the sequence of arguments, the target method)
+      */
     def unapply(expr: InstanceInvokeExpr) = Some(expr.base, expr.args, expr.method)
   }
 
@@ -675,14 +714,13 @@ object ScalaWrappers {
     @inline def castType_=(newCt: Type) = v.setCastType(newCt)
   }
 
-
   object SDefinitionStmt {
-    /**
-     * Extractor that gives a tuple with the left op and the right op (in that order)
-     *
-     * @param ds the assign statement
-     * @return (left op, right op)
-     */
+
+    /** Extractor that gives a tuple with the left op and the right op (in that order)
+      *
+      * @param ds the assign statement
+      * @return (left op, right op)
+      */
     def unapply(ds: DefinitionStmt): Option[(Value, Value)] = Some(ds.leftOp, ds.rightOp)
   }
 
@@ -697,12 +735,12 @@ object ScalaWrappers {
   }
 
   object SIdentityStmt {
-    /**
-     * Extractor that gives a tuple with the left op and the right op (in that order)
-     *
-     * @param is the identity statement
-     * @return (left op, right op)
-     */
+
+    /** Extractor that gives a tuple with the left op and the right op (in that order)
+      *
+      * @param is the identity statement
+      * @return (left op, right op)
+      */
     def unapply(is: IdentityStmt): Option[(Value, Value)] = Some(is.leftOp, is.rightOp)
   }
 
@@ -717,12 +755,11 @@ object ScalaWrappers {
   object SAssignStmt {
     def apply(left: Value, right: Value): AssignStmt = Jimple.v.newAssignStmt(left, right)
 
-    /**
-     * Extractor that gives a tuple with the left op and the right op (in that order)
-     *
-     * @param as the assign statement
-     * @return (left op, right op)
-     */
+    /** Extractor that gives a tuple with the left op and the right op (in that order)
+      *
+      * @param as the assign statement
+      * @return (left op, right op)
+      */
     def unapply(as: AssignStmt) = Some(as.leftOp, as.rightOp)
   }
 
@@ -741,7 +778,6 @@ object ScalaWrappers {
 
     @inline def op_=(newOp: Value) = v.setOp(newOp)
   }
-
 
   implicit class RichOptions(val v: Options) extends AnyVal {
     @inline def classPath = v.soot_classpath()
@@ -882,7 +918,8 @@ object ScalaWrappers {
 
     @inline def outputDir_=(setting: String) = v.set_output_dir(setting)
 
-    @inline def outputDir_=(setting: Path) = v.set_output_dir(setting.toAbsolutePath.toString) //toAbsolutePath because the directory may not exist yet
+    @inline def outputDir_=(setting: Path) =
+      v.set_output_dir(setting.toAbsolutePath.toString) //toAbsolutePath because the directory may not exist yet
 
     @inline def outputFormat = v.output_format()
 

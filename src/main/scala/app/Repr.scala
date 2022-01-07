@@ -9,7 +9,8 @@ case class VarPointer(methodName: String, local: String) extends Pointer {
   override def toString = s"${methodName}_$local" // foo_$stack1
 }
 case class FieldPointer(alloc: Allocation, fieldName: String) extends Pointer {
-  override def toString = s"($alloc).${fieldName}" // (10@Foo).bar
+  override def toString = s"($alloc).$fieldName" // (10@Foo).bar
 }
 
 case class VarField(receiver: VarPointer, field: String)
+case class CallSite()

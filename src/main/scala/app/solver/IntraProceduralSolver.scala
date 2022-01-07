@@ -18,7 +18,7 @@ case class IntraProceduralSolver[T: ClassTag](val methodName: String) {
   val (_, bodies) = Initializer.bodyOf[T](methodName)
   val worklist    = mutable.Queue[(Pointer, mutable.Set[Allocation])]()
 
-  def addEdge(from: Pointer, to: Pointer) = {
+  def pointsTo(from: Pointer, to: Pointer) = {
     if ((graph find from ~> to).isEmpty) {
       graph.add(from ~> to)
       worklist += ((to, env(from)))
@@ -34,7 +34,7 @@ case class IntraProceduralSolver[T: ClassTag](val methodName: String) {
     }
   }
 
-  def analysis() = {
+  def run() = {
     val (stores, loads) = bodies.units.foldLeft(immutable.Set[(VarField, VarPointer)](), immutable.Set[(VarPointer, VarField)]()) { (acc, ele) =>
       val (stores, loads) = acc
       ele match {
@@ -58,7 +58,7 @@ case class IntraProceduralSolver[T: ClassTag](val methodName: String) {
     })
 
     bodies.units.foreach {
-      case SAssignStmt(SLocal(left, _), SLocal(right, _)) => addEdge(VarPointer(methodName, right), VarPointer(methodName, left))
+      case SAssignStmt(SLocal(left, _), SLocal(right, _)) => pointsTo(VarPointer(methodName, right), VarPointer(methodName, left))
       case _                                              => ()
     }
 
@@ -71,8 +71,8 @@ case class IntraProceduralSolver[T: ClassTag](val methodName: String) {
       pointer match {
         case variable @ VarPointer(_, _) =>
           delta.foreach { delta =>
-            stores.filter(_._1.receiver == variable).foreach { store => addEdge(store._2, FieldPointer(delta, store._1.field)) }
-            loads.filter(_._2.receiver == variable).foreach { load => addEdge(FieldPointer(delta, load._2.field), load._1) }
+            stores.filter(_._1.receiver == variable).foreach { store => pointsTo(store._2, FieldPointer(delta, store._1.field)) }
+            loads.filter(_._2.receiver == variable).foreach { load => pointsTo(FieldPointer(delta, load._2.field), load._1) }
           }
         case _ => None
       }
@@ -83,8 +83,6 @@ case class IntraProceduralSolver[T: ClassTag](val methodName: String) {
       println(graph)
       println()
     }
-
     Choreographer.dump(graph, env.toMap)
-
   }
 }
