@@ -68,7 +68,7 @@ class InterProceduralSolver(entry: SootMethod) {
   def handleInvoke(receiver: VarPointer, self: Allocation): Unit = {
     invocations.foreach { case callsite @ CallSite(receiver, method, args, result, lineNumber) =>
       val target = dispatch(self, method)
-      worklist += (Receiver(target), mutable.Set(self))
+      worklist += ((Receiver(target), mutable.Set(self)))
       if (!callGraph.contains((callsite, target))) {
         callGraph.add((callsite, target))
         reachableMethods += target
