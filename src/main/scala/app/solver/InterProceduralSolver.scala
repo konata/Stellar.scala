@@ -22,8 +22,9 @@ class InterProceduralSolver(entry: SootMethod) {
   val callGraph        = mutable.Set[(CallSite, SootMethod)]()
   val env              = mutable.Map[Pointer, mutable.Set[Allocation]]().withDefaultValue(mutable.Set[Allocation]())
 
+  // stores, loads, invocations for all reachable statements
   def relatives(receiver: VarPointer): (Stores, Loads) = ???
-  def invocations(): Set[CallSite]                     = ???
+  def invocations: Set[CallSite]                       = ???
 
   // Done@Solve
   def solve() {
@@ -32,7 +33,7 @@ class InterProceduralSolver(entry: SootMethod) {
     while (current.nonEmpty) {
       val Some((pointer, allocation)) = current
       val delta                       = allocation -- env(pointer)
-      propagate(pointer, delta.toSet)
+      propagate(pointer, mutable.Set(delta.toSeq: _*))
       pointer match {
         case variable @ VarPointer(_, _) =>
           val (stores, loads) = relatives(variable)
@@ -55,7 +56,15 @@ class InterProceduralSolver(entry: SootMethod) {
     }
   }
 
-  def propagate(to: Pointer, allocations: Set[app.Allocation]) = ???
+  def propagate(pointer: Pointer, delta: mutable.Set[Allocation]) = if (delta.nonEmpty) {
+    env.getOrElseUpdate(pointer, mutable.Set()).addAll(delta)
+    for (node <- pointerGraph.find(pointer)) {
+      node.diSuccessors.foreach { node =>
+        worklist += ((node.value, delta))
+      }
+    }
+  }
+
   def handleInvoke(receiver: VarPointer, self: Allocation): Unit = {
     invocations.foreach { case callsite @ CallSite(receiver, method, args, result, lineNumber) =>
       val target = dispatch(self, method)
