@@ -12,7 +12,7 @@ import soot.{Scene, SootMethod}
 import scala.collection.mutable
 
 object InterProceduralSolver {
-  type Store  = (VarField, Pointer) //
+  type Store  = (VarField, VarPointer)
   type Load   = (VarPointer, VarField)
   type Stores = Set[Store]
   type Loads  = Set[Load]
