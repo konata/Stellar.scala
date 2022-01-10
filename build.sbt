@@ -5,16 +5,17 @@ lazy val root = (project in file("."))
     name := "PointsTo"
   )
 
-libraryDependencies += "org.soot-oss" % "soot" % "4.2.1"
-libraryDependencies += "org.slf4j" % "slf4j-simple" % "1.7.32"
-libraryDependencies += "org.scala-graph" %% "graph-core" % "1.13.3"
-libraryDependencies += "org.scala-graph" %% "graph-dot" % "1.13.3"
-
+libraryDependencies += "org.soot-oss"     % "soot"         % "4.2.1"
+libraryDependencies += "org.slf4j"        % "slf4j-simple" % "1.7.32"
+libraryDependencies += "org.scala-graph" %% "graph-core"   % "1.13.3"
+libraryDependencies += "org.scala-graph" %% "graph-dot"    % "1.13.3"
+libraryDependencies += "org.scalatest"   %% "scalatest"    % "3.2.9"
 
 compileOrder := CompileOrder.JavaThenScala
 
 javacOptions ++= Seq(
-  "-source", "1.8",
-  "-target", "1.8"
+  "-source",
+  "1.8",
+  "-target",
+  "1.8"
 )
-

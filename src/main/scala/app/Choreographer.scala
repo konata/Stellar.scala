@@ -9,8 +9,8 @@ object Choreographer {
 
   type PointerFlowGraph = Graph[Pointer, DiEdge]
 
-  val Array(yellow, cyan, red, _*) = "yellow cyan red".split(raw"""\s+""").map(color => DotAttr(Id("color"), Id(color)))
-  val Array(box, oval, circle, _*) = "box oval circle".split(raw"""\s+""").map(shape => DotAttr(Id("shape"), Id(shape)))
+  val Array(yellow, cyan, red, _*) = "yellow cyan red".split("""\s+""").map(color => DotAttr(Id("color"), Id(color)))
+  val Array(box, oval, circle, _*) = "box oval circle".split("""\s+""").map(shape => DotAttr(Id("shape"), Id(shape)))
   def tooltip(tips: String)        = DotAttr(Id("tooltip"), Id(tips))
 
   implicit val root = DotRootGraph(true, Some(Id("PFG")))
