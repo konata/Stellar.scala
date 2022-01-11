@@ -1,11 +1,12 @@
-package playgrounds
+package solvers
 
-import app.{Initializer, VarPointer}
-import app.solver.InterProceduralSolver
+import app.{Allocation, Initializer, VarPointer}
+import app.solver.{InterProceduralSolver, IntraProceduralSolver}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
 import sample.ziwu.Instrumented
+import playground._
 import soot.Local
 import soot.util.ScalaWrappers.{RichBody, RichChain, RichSootMethod, SAssignStmt, SInstanceFieldRef, SInvokeExpr, SLocal}
 
@@ -33,7 +34,45 @@ class InterProcedureSpec extends AnyFlatSpec with should.Matchers with BeforeAnd
 
   "invocations" should "find all invocation for static-invoke special-invoke and virtual-invoke" in {}
 
-  "dispatch" should "find the most accurate implementation for method" in {}
+  "all classes" should "resolve hierarchy class" in {
+    Initializer
+  }
+
+  "dispatch" should "find the most accurate implementation for method" in {
+    val (method, _) = Initializer.bodyOf[Animal]("foo")
+    Seq(
+      classOf[Animal],
+      classOf[Bird],
+      classOf[BlackCat],
+      classOf[Cat],
+      classOf[Dog],
+      classOf[Husky],
+      classOf[Sparrow]
+    ).zip(
+      Seq(
+        classOf[Animal],
+        classOf[Animal],
+        classOf[Animal],
+        classOf[Animal],
+        classOf[Dog],
+        classOf[Dog],
+        classOf[Sparrow]
+      )
+    ).foreach { case (src, expected) =>
+      val name = InterProceduralSolver.dispatch(Allocation(0, src.getName), method).declaringClass.getName
+      assert(
+        name == expected.getName,
+        s"failed for $src -> $expected actually: $name"
+      )
+    }
+
+//    (it => Allocation(0, it.getName))
+//      .foreach { it =>
+//        println(it.clazz, InterProceduralSolver.dispatch(it, method))
+//      }
+  }
+
+  "dispatch for static method" should "find the exactly method" in {}
 
   "receiver var" should "be found" in {}
 
@@ -70,4 +109,5 @@ class InterProcedureSpec extends AnyFlatSpec with should.Matchers with BeforeAnd
   override protected def beforeAll(): Unit = {
     Initializer.initialize()
   }
+
 }
