@@ -7,7 +7,7 @@ object Application {
   def main(args: Array[String]): Unit = {
     Builder.initialize()
 //    IntraProceduralSolver[Instrumented]("entry").run()
-    val (method, _) = Builder.ofBody[Instrumented]("entry")
+    val (method, _) = Builder.ofMethod[Instrumented]("entry")
     val solver      = InterProceduralSolver(method)
     solver.solve()
     println(solver.env)

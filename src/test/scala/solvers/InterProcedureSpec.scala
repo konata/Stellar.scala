@@ -14,7 +14,7 @@ import playground.samples.Instrumented
 class InterProcedureSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfterAll {
 
   "returnsOf" should "find all possible return vars" in {
-    val (method, body) = Builder.ofBody[Instrumented]("foo")
+    val (method, body) = Builder.ofMethod[Instrumented]("foo")
     val returns        = InterProceduralSolver.returnOf(method)
     returns.size should be(3)
     raw"""\s+""".r.split("0 3 4").foreach { it =>
@@ -27,7 +27,7 @@ class InterProcedureSpec extends AnyFlatSpec with should.Matchers with BeforeAnd
   // foobar(foo.bar) ??
   // foo.bar = foobar(foo.bar) ??
   "relatives" should "filter all loads and stores statements " in {
-    val (method, bodies) = Builder.ofBody[Instrumented]("relatives")
+    val (method, bodies) = Builder.ofMethod[Instrumented]("relatives")
     val local            = bodies.getParameterLocal(0)
     val tuple            = InterProceduralSolver.relatives(VarPointer(method.name, local.getName), method)
     println(tuple)
@@ -40,7 +40,7 @@ class InterProcedureSpec extends AnyFlatSpec with should.Matchers with BeforeAnd
   }
 
   "dispatch" should "find the most accurate implementation for method" in {
-    val (method, _) = Builder.ofBody[Animal]("foo")
+    val (method, _) = Builder.ofMethod[Animal]("foo")
     Seq(
       classOf[Animal],
       classOf[Bird],
@@ -75,7 +75,7 @@ class InterProcedureSpec extends AnyFlatSpec with should.Matchers with BeforeAnd
   "arguments pass" should "propagate correctly" in {}
 
   "`a.bar = b.foo()`" should " never exists" in {
-    val (_, bodies) = Builder.ofBody[Instrumented]("assignWithCall")
+    val (_, bodies) = Builder.ofMethod[Instrumented]("assignWithCall")
     bodies.units.foreach {
       case SAssignStmt(SInstanceFieldRef(_), SInvokeExpr(_)) => assert(false)
       case _                                                 => None
@@ -83,12 +83,12 @@ class InterProcedureSpec extends AnyFlatSpec with should.Matchers with BeforeAnd
   }
 
   "`this` var of static method " should "be null" in {
-    val (_, bodies) = Builder.ofBody[Instrumented]("entry")
+    val (_, bodies) = Builder.ofMethod[Instrumented]("entry")
     assert(bodies.thisLocal.isEmpty)
   }
 
   "`a.foo(b, b.a)`" should "never exists" in {
-    val (_, bodies) = Builder.ofBody[Instrumented]("assignWithCall")
+    val (_, bodies) = Builder.ofMethod[Instrumented]("assignWithCall")
     bodies.units.foreach {
       case SAssignStmt(_, SInvokeExpr(_, args, _)) =>
         args.foreach { arg =>

@@ -15,7 +15,7 @@ case class IntraProceduralSolver[T: ClassTag](val methodName: String) {
 
   val env         = mutable.Map[Pointer, mutable.Set[Allocation]]().withDefaultValue(mutable.Set[Allocation]())
   val graph       = Graph[Pointer, DiEdge]()
-  val (_, bodies) = Builder.ofBody[T](methodName)
+  val (_, bodies) = Builder.ofMethod[T](methodName)
   val worklist    = mutable.Queue[(Pointer, mutable.Set[Allocation])]()
 
   def pointsTo(from: Pointer, to: Pointer) = {

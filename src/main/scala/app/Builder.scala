@@ -23,7 +23,7 @@ object Builder {
 
   def ofClass[T: ClassTag] = Scene.v().sootClassOpt(implicitly[ClassTag[T]].runtimeClass.getName)
 
-  def ofBody[T: ClassTag](name: String) = {
+  def ofMethod[T: ClassTag](name: String) = {
     val Some(clazz) = ofClass[T]
     val method      = clazz.methods.find(_.getName.contains(name)).head
     val body        = method.retrieveActiveBody()
