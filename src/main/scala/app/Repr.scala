@@ -4,7 +4,7 @@ import soot.SootMethod
 import soot.util.ScalaWrappers.RichSootMethod
 
 case class Allocation(line: Int, clazz: String) {
-  override def toString() = s"$line#$clazz" // 18#Foo
+  override def toString = s"$line#$clazz" // 18#Foo
 }
 
 sealed trait Pointer

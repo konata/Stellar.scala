@@ -1,16 +1,13 @@
 package app
 
+import app.Consts._
 import soot.{G, Scene}
 import soot.options.Options
 import soot.util.ScalaWrappers.{RichOptions, RichScene, RichSootClass}
 
-import java.io.File
 import scala.reflect.ClassTag
 
-object Initializer {
-  private val pattern = ".*pointsto.*jar$".r
-  val excludes        = """soot.* java.* javax.* scala.*""".split(raw"""\s+""").filter(_.nonEmpty)
-  val instrumentsPath = new File("target/scala-2.13/").listFiles.filter(pattern matches _.getName).map(_.getAbsolutePath)
+object Builder {
 
   def initialize() = {
     G.reset()
@@ -24,10 +21,10 @@ object Initializer {
     Scene.v().loadNecessaryClasses()
   }
 
-  def clazzOf[T: ClassTag] = Scene.v().sootClassOpt(implicitly[ClassTag[T]].runtimeClass.getName)
+  def ofClass[T: ClassTag] = Scene.v().sootClassOpt(implicitly[ClassTag[T]].runtimeClass.getName)
 
-  def bodyOf[T: ClassTag](name: String) = {
-    val Some(clazz) = clazzOf[T]
+  def ofBody[T: ClassTag](name: String) = {
+    val Some(clazz) = ofClass[T]
     val method      = clazz.methods.find(_.getName.contains(name)).head
     val body        = method.retrieveActiveBody()
     (method, body)

@@ -1,6 +1,6 @@
 package app.solver
 
-import app.{Allocation, Choreographer, FieldPointer, Initializer, VarField, Pointer, VarPointer}
+import app.{Allocation, Choreographer, FieldPointer, Builder, VarField, Pointer, VarPointer}
 import scalax.collection.GraphEdge.{DiEdge, ~>}
 import scalax.collection.GraphPredef.EdgeAssoc
 import scalax.collection.mutable.Graph
@@ -15,7 +15,7 @@ case class IntraProceduralSolver[T: ClassTag](val methodName: String) {
 
   val env         = mutable.Map[Pointer, mutable.Set[Allocation]]().withDefaultValue(mutable.Set[Allocation]())
   val graph       = Graph[Pointer, DiEdge]()
-  val (_, bodies) = Initializer.bodyOf[T](methodName)
+  val (_, bodies) = Builder.ofBody[T](methodName)
   val worklist    = mutable.Queue[(Pointer, mutable.Set[Allocation])]()
 
   def pointsTo(from: Pointer, to: Pointer) = {
