@@ -1,4 +1,4 @@
-package sample.ziwu;
+package playground.samples;
 
 import java.util.Random;
 

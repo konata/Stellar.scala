@@ -5,10 +5,11 @@ import app.solver.{InterProceduralSolver, IntraProceduralSolver}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
-import sample.ziwu.Instrumented
 import playground._
 import soot.Local
 import app.ScalaWrappers.{RichBody, RichChain, RichSootMethod, SAssignStmt, SInstanceFieldRef, SInvokeExpr, SLocal}
+import playground.animals.{Animal, Bird, BlackCat, Cat, Dog, Husky, Sparrow}
+import playground.samples.Instrumented
 
 class InterProcedureSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfterAll {
 

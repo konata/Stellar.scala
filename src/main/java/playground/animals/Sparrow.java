@@ -1,4 +1,4 @@
-package playground;
+package playground.animals;
 
 public class Sparrow extends Bird {
     @Override

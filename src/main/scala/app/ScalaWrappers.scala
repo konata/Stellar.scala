@@ -8,7 +8,7 @@ import soot.options.Options
 import soot.tagkit._
 import soot.toolkits.exceptions.ThrowAnalysis
 import soot.util._
-import soot.{Unit => _, _}
+import soot.{Unit => SootUnit, _}
 
 import java.io.File
 import java.nio.file.Path
@@ -16,7 +16,6 @@ import scala.jdk.CollectionConverters._
 import scala.util.Try
 
 object ScalaWrappers {
-  type SootUnit = soot.Unit
 
   private def ifToOption[T](condition: => Boolean, positiveResult: => T): Option[T] = if (condition) Some(positiveResult) else None
 

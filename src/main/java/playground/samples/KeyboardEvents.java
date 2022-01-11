@@ -1,4 +1,4 @@
-package sample.ziwu;
+package playground.samples;
 
 public class KeyboardEvents implements Events {
 }

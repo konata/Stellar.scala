@@ -1,4 +1,4 @@
-package sample.ziwu;
+package playground.samples;
 
 public interface Events {
     default String foo(Events src) {
