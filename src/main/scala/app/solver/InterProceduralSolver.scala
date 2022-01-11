@@ -85,13 +85,13 @@ class InterProceduralSolver(entry: SootMethod) {
   val env              = mutable.Map[Pointer, mutable.Set[Allocation]]().withDefaultValue(mutable.Set[Allocation]())
 
   // Done@Solve
-  def solve() {
+  def solve(): Unit = {
     expand(entry)
     val current = worklist.removeHeadOption()
     while (current.nonEmpty) {
       val Some((pointer, allocation)) = current
-      val delta                       = allocation -- env(pointer)
-      propagate(pointer, mutable.Set(delta.toSeq: _*))
+      val delta                       = (Set.empty ++ allocation) -- env(pointer)
+      propagate(pointer, mutable.Set.empty ++= delta)
       pointer match {
         case variable: VarPointer =>
           val (stores, loads) = reachableMethods.foldLeft((Set[Store](), Set[Load]())) { case ((store, load), it) =>
