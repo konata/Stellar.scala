@@ -1,34 +1,5 @@
-package soot.util
+package app
 
-import app.{Allocation, VarPointer}
-import soot.{
-  AnySubType,
-  ArrayType,
-  Body,
-  ClassMember,
-  Context,
-  FastHierarchy,
-  Hierarchy,
-  Local,
-  MethodSource,
-  Modifier,
-  PatchingChain,
-  PointsToAnalysis,
-  RefType,
-  Scene,
-  SootClass,
-  SootField,
-  SootFieldRef,
-  SootMethod,
-  SootMethodRef,
-  Trap,
-  Type,
-  Value,
-  ValueBox
-}
-
-import java.io.File
-import java.nio.file.Path
 import soot.jimple._
 import soot.jimple.spark.pag.PAG
 import soot.jimple.toolkits.callgraph.{CallGraph, ContextSensitiveCallGraph, ReachableMethods}
@@ -36,8 +7,11 @@ import soot.jimple.toolkits.pointer.SideEffectAnalysis
 import soot.options.Options
 import soot.tagkit._
 import soot.toolkits.exceptions.ThrowAnalysis
+import soot.util._
+import soot.{Unit => _, _}
 
-import scala.+:
+import java.io.File
+import java.nio.file.Path
 import scala.jdk.CollectionConverters._
 import scala.util.Try
 

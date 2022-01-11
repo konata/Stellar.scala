@@ -1,10 +1,10 @@
 package app.solver
 
-import app.{Allocation, Choreographer, FieldPointer, Builder, VarField, Pointer, VarPointer}
-import scalax.collection.GraphEdge.{DiEdge, ~>}
+import app.ScalaWrappers.{RichBody, RichChain, RichHost, SAssignStmt, SInstanceFieldRef, SLocal, SNewExpr}
+import app._
+import scalax.collection.GraphEdge.DiEdge
 import scalax.collection.GraphPredef.EdgeAssoc
 import scalax.collection.mutable.Graph
-import soot.util.ScalaWrappers.{RichBody, RichChain, RichHost, SAssignStmt, SInstanceFieldRef, SLocal, SNewExpr}
 
 import scala.collection.{immutable, mutable}
 import scala.reflect.ClassTag

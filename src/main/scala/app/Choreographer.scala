@@ -3,6 +3,7 @@ package app
 import scalax.collection.GraphEdge.DiEdge
 import scalax.collection.io.dot.{DotAttr, DotEdgeStmt, DotNodeStmt, DotRootGraph, Id, NodeId, graph2DotExport}
 import scalax.collection.mutable.Graph
+
 import scala.collection.mutable
 
 object Choreographer {

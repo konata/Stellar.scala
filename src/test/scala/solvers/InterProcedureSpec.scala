@@ -8,7 +8,7 @@ import org.scalatest.matchers.should
 import sample.ziwu.Instrumented
 import playground._
 import soot.Local
-import soot.util.ScalaWrappers.{RichBody, RichChain, RichSootMethod, SAssignStmt, SInstanceFieldRef, SInvokeExpr, SLocal}
+import app.ScalaWrappers.{RichBody, RichChain, RichSootMethod, SAssignStmt, SInstanceFieldRef, SInvokeExpr, SLocal}
 
 class InterProcedureSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfterAll {
 

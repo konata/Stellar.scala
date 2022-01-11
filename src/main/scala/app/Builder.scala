@@ -1,9 +1,9 @@
 package app
 
 import app.Consts._
-import soot.{G, Scene}
+import app.ScalaWrappers.{RichOptions, RichScene, RichSootClass}
 import soot.options.Options
-import soot.util.ScalaWrappers.{RichOptions, RichScene, RichSootClass}
+import soot.{G, Scene}
 
 import scala.reflect.ClassTag
 

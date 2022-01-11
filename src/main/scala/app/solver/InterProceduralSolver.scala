@@ -1,23 +1,12 @@
 package app.solver
 
-import app.solver.InterProceduralSolver._
+import app.ScalaWrappers.{RichBody, RichChain, RichHost, RichLocal, RichSootMethod, SAssignStmt, SInstanceFieldRef, SInvokeExpr, SLocal, SReturnStmt}
 import app._
+import app.solver.InterProceduralSolver._
 import scalax.collection.GraphEdge.DiEdge
 import scalax.collection.GraphPredef.EdgeAssoc
 import scalax.collection.mutable.Graph
 import soot.jimple.Stmt
-import soot.util.ScalaWrappers.{
-  RichBody,
-  RichChain,
-  RichHost,
-  RichLocal,
-  RichSootMethod,
-  SAssignStmt,
-  SInstanceFieldRef,
-  SInvokeExpr,
-  SLocal,
-  SReturnStmt
-}
 import soot.{Scene, SootMethod, Value}
 
 import scala.collection.mutable
