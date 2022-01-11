@@ -44,14 +44,14 @@ object InterProceduralSolver {
     receiver.map { case SLocal(name, _) => VarPointer(method.name, name) },
     method,
     args.map { case SLocal(name, _) => VarPointer(method.name, name) },
-    // TODO: fix a.bar = a.foo()
+    // TODO: fix case  `a.bar = a.foo()`
     returns.map { VarPointer(method.name, _) },
     lineNumber
   )
 
   def invocations(method: SootMethod): Set[CallSite] = method.retrieveActiveBody().units.foldLeft(Set[CallSite]()) { case (acc, ele) =>
     (ele match {
-      // TODO:  fix a.foo(b, *b.a* )
+      // TODO:fix case `a.foo(b, *b.a* )`
       case SAssignStmt(SLocal(ret, _), SInvokeExpr(receiver, args, method)) =>
         Some(mkCallSite(Some(ret), receiver, args.toSeq, method, ele.lineNumber))
       case SInvokeExpr(receiver, args, method) =>
@@ -111,12 +111,10 @@ class InterProceduralSolver(entry: SootMethod) {
   }
 
   // Done@AddReachable
-  def expand(method: SootMethod) = {
-    if (!reachableMethods.contains(method)) {
-      reachableMethods.add(method)
-      worklist.addAll(method.allocations.map(it => (it._1, mutable.Set(it._2))))
-      method.assigns.foreach { case (to, from) => connect(from, to) }
-    }
+  def expand(method: SootMethod) = if (!reachableMethods.contains(method)) {
+    reachableMethods.add(method)
+    worklist.addAll(method.allocations.map { case (pointer, allocation) => (pointer, mutable.Set(allocation)) })
+    method.assigns.foreach { case (to, from) => connect(from, to) }
   }
 
   def propagate(pointer: Pointer, delta: mutable.Set[Allocation]) = if (delta.nonEmpty) {
@@ -130,7 +128,8 @@ class InterProceduralSolver(entry: SootMethod) {
 
   def handleInvoke(receiver: VarPointer, self: Allocation): Unit = {
     reachableMethods.flatMap(it => invocations(it)).foreach { case callsite @ CallSite(receiver, method, args, result, lineNumber) =>
-      val target                  = dispatch(self, method)
+      val target = dispatch(self, method)
+      // TODO: workaround for receiver is null (static invoke)
       val SLocal(receiverName, _) = target.body.getThisLocal
       worklist += ((VarPointer(target.name, receiverName), mutable.Set(self)))
       if (!callGraph.contains((callsite, target))) {

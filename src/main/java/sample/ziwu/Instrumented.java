@@ -1,9 +1,10 @@
-package org.ziwu;
+package sample.ziwu;
 
 import java.util.Random;
 
 public class Instrumented {
 
+    String name;
     Events first;
     Events second;
 
@@ -45,6 +46,11 @@ public class Instrumented {
     public static <T> T id(T foo) {
         return foo;
     }
+
+    public void assignWithCall(Instrumented from) {
+        from.name = from.second.foo(from.first);
+    }
+
 
     public void relatives(Instrumented app2) {
         Instrumented app = new Instrumented();

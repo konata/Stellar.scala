@@ -1,7 +1,7 @@
 package app
 
 import app.solver.IntraProceduralSolver
-import org.ziwu.Instrumented
+import sample.ziwu.Instrumented
 
 object Application {
   def main(args: Array[String]): Unit = {
