@@ -44,14 +44,12 @@ object InterProceduralSolver {
     receiver.map { case SLocal(name, _) => VarPointer(method.name, name) },
     method,
     args.map { case SLocal(name, _) => VarPointer(method.name, name) },
-    // TODO: fix case  `a.bar = a.foo()`
     returns.map { VarPointer(method.name, _) },
     lineNumber
   )
 
   def invocations(method: SootMethod): Set[CallSite] = method.retrieveActiveBody().units.foldLeft(Set[CallSite]()) { case (acc, ele) =>
     (ele match {
-      // TODO:fix case `a.foo(b, *b.a* )`
       case SAssignStmt(SLocal(ret, _), SInvokeExpr(receiver, args, method)) =>
         Some(mkCallSite(Some(ret), receiver, args.toSeq, method, ele.lineNumber))
       case SInvokeExpr(receiver, args, method) =>
@@ -129,9 +127,9 @@ class InterProceduralSolver(entry: SootMethod) {
   def handleInvoke(receiver: VarPointer, self: Allocation): Unit = {
     reachableMethods.flatMap(it => invocations(it)).foreach { case callsite @ CallSite(receiver, method, args, result, lineNumber) =>
       val target = dispatch(self, method)
-      // TODO: workaround for receiver is null (static invoke)
-      val SLocal(receiverName, _) = target.body.getThisLocal
-      worklist += ((VarPointer(target.name, receiverName), mutable.Set(self)))
+      target.body.thisLocal.foreach { case SLocal(receiverName, _) =>
+        worklist += ((VarPointer(target.name, receiverName), mutable.Set(self)))
+      }
       if (!callGraph.contains((callsite, target))) {
         callGraph.add((callsite, target))
         reachableMethods += target

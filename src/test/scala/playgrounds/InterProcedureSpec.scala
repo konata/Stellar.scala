@@ -47,8 +47,13 @@ class InterProcedureSpec extends AnyFlatSpec with should.Matchers with BeforeAnd
     }
   }
 
+  "`this` var of static method " should "be null" in {
+    val (_, bodies) = Initializer.bodyOf[Instrumented]("entry")
+    assert(bodies.thisLocal.isEmpty)
+  }
+
   "`a.foo(b, b.a)`" should "never exists" in {
-    val (method, bodies) = Initializer.bodyOf[Instrumented]("assignWithCall")
+    val (_, bodies) = Initializer.bodyOf[Instrumented]("assignWithCall")
     bodies.units.foreach {
       case SAssignStmt(_, SInvokeExpr(_, args, _)) =>
         args.foreach { arg =>

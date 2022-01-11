@@ -51,7 +51,6 @@ public class Instrumented {
         from.name = from.second.foo(from.first);
     }
 
-
     public void relatives(Instrumented app2) {
         Instrumented app = new Instrumented();
         Events mouseEvents = new MouseEvents();

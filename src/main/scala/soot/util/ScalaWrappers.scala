@@ -346,7 +346,7 @@ object ScalaWrappers {
 
     @inline def method = v.getMethod
 
-    @inline def thisLocal = v.getThisLocal
+    @inline def thisLocal = Try(v.getThisLocal).toOption
 
     @inline def parameterLocal(i: Int) = v.getParameterLocal(i)
 
