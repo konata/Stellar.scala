@@ -198,6 +198,6 @@ class InterProceduralSolver(entry: SootMethod) {
     */
   def connect(from: Pointer, to: Pointer) = if ((pointerGraph find from ~> to).isEmpty) {
     pointerGraph.add(from ~> to)
-    worklist += ((to, env(from)))
+    Option(env(from)).filter(_.nonEmpty).foreach { it => worklist += ((to, it)) }
   }
 }
