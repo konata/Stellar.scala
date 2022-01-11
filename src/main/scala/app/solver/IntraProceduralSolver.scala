@@ -69,7 +69,7 @@ case class IntraProceduralSolver[T: ClassTag](val methodName: String) {
       propagate(pointer, delta)
 
       pointer match {
-        case variable @ VarPointer(_, _) =>
+        case variable: VarPointer =>
           delta.foreach { delta =>
             stores.filter(_._1.receiver == variable).foreach { store => pointsTo(store._2, FieldPointer(delta, store._1.field)) }
             loads.filter(_._2.receiver == variable).foreach { load => pointsTo(FieldPointer(delta, load._2.field), load._1) }

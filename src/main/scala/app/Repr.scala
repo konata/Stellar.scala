@@ -16,4 +16,4 @@ case class FieldPointer(alloc: Allocation, fieldName: String) extends Pointer {
 }
 
 case class VarField(receiver: VarPointer, field: String)
-case class CallSite(receiver: VarPointer, method: SootMethod, args: Seq[Pointer], returns: Pointer, lineNumber: Int)
+case class CallSite(receiver: Option[VarPointer], method: SootMethod, args: Seq[Pointer], returns: Option[Pointer], lineNumber: Int)

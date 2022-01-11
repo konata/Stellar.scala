@@ -6,8 +6,19 @@ import scalax.collection.GraphEdge.DiEdge
 import scalax.collection.GraphPredef.EdgeAssoc
 import scalax.collection.mutable.Graph
 import soot.jimple.Stmt
-import soot.util.ScalaWrappers.{RichBody, RichChain, RichLocal, RichSootMethod, SAssignStmt, SInstanceFieldRef, SLocal, SReturnStmt}
-import soot.{Scene, SootMethod}
+import soot.util.ScalaWrappers.{
+  RichBody,
+  RichChain,
+  RichHost,
+  RichLocal,
+  RichSootMethod,
+  SAssignStmt,
+  SInstanceFieldRef,
+  SInvokeExpr,
+  SLocal,
+  SReturnStmt
+}
+import soot.{Scene, SootMethod, Value}
 
 import scala.collection.mutable
 
@@ -29,7 +40,25 @@ object InterProceduralSolver {
     }
   }
 
-  def invocations(method: SootMethod): Set[CallSite] = ???
+  def mkCallSite(returns: Option[String], receiver: Option[Value], args: Seq[Value], method: SootMethod, lineNumber: Int) = CallSite(
+    receiver.map { case SLocal(name, _) => VarPointer(method.name, name) },
+    method,
+    args.map { case SLocal(name, _) => VarPointer(method.name, name) },
+    // TODO: fix a.bar = a.foo()
+    returns.map { VarPointer(method.name, _) },
+    lineNumber
+  )
+
+  def invocations(method: SootMethod): Set[CallSite] = method.retrieveActiveBody().units.foldLeft(Set[CallSite]()) { case (acc, ele) =>
+    (ele match {
+      // TODO:  fix a.foo(b, *b.a* )
+      case SAssignStmt(SLocal(ret, _), SInvokeExpr(receiver, args, method)) =>
+        Some(mkCallSite(Some(ret), receiver, args.toSeq, method, ele.lineNumber))
+      case SInvokeExpr(receiver, args, method) =>
+        Some(mkCallSite(None, receiver, args.toSeq, method, ele.lineNumber))
+      case _ => None
+    }).toSet ++ acc
+  }
 
   def returnOf(method: SootMethod): Set[VarPointer] = method.retrieveActiveBody().units.foldLeft(Set[VarPointer]()) {
     case (acc, SReturnStmt(SLocal((name, _)))) => acc + VarPointer(method.name, name)
@@ -66,7 +95,7 @@ class InterProceduralSolver(entry: SootMethod) {
       val delta                       = allocation -- env(pointer)
       propagate(pointer, mutable.Set(delta.toSeq: _*))
       pointer match {
-        case variable @ VarPointer(_, _) =>
+        case variable: VarPointer =>
           val (stores, loads) = reachableMethods.foldLeft((Set[Store](), Set[Load]())) { case ((store, load), it) =>
             val (s, l) = relatives(variable, it)
             (store ++ s, load ++ l)
@@ -103,7 +132,6 @@ class InterProceduralSolver(entry: SootMethod) {
     reachableMethods.flatMap(it => invocations(it)).foreach { case callsite @ CallSite(receiver, method, args, result, lineNumber) =>
       val target                  = dispatch(self, method)
       val SLocal(receiverName, _) = target.body.getThisLocal
-
       worklist += ((VarPointer(target.name, receiverName), mutable.Set(self)))
       if (!callGraph.contains((callsite, target))) {
         callGraph.add((callsite, target))
@@ -111,12 +139,13 @@ class InterProceduralSolver(entry: SootMethod) {
         args.zipWithIndex.foreach { case (arg, index) =>
           connect(VarPointer(target.name, target.paramLocals(index).name), arg)
         }
-        returnOf(target).foreach { it => connect(it, result) }
+        result.foreach { to =>
+          returnOf(target).foreach { from => connect(from, to) }
+        }
       }
     }
   }
 
-  // AddEdge
   def connect(from: Pointer, to: Pointer) = if ((pointerGraph find from ~> to).isEmpty) {
     pointerGraph.add(from ~> to)
     worklist += ((to, env(from)))

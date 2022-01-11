@@ -22,7 +22,7 @@ object Choreographer {
       it => Some((root, DotEdgeStmt(NodeId(it._1.toString()), NodeId(it._2.toString)))),
       cNodeTransformer = Some {
         _.value match {
-          case vp @ VarPointer(_, _)           => Some(root, DotNodeStmt(NodeId(vp.toString), List(cyan, box, tips(vp))))
+          case vp: VarPointer                  => Some(root, DotNodeStmt(NodeId(vp.toString), List(cyan, box, tips(vp))))
           case fp @ FieldPointer(alloc, field) => Some(root, DotNodeStmt(NodeId(fp.toString), List(yellow, tips(fp))))
         }
       }
