@@ -101,6 +101,8 @@ object InterProceduralSolver {
     }
     targetMethod
   }
+
+  def apply(entry: SootMethod): InterProceduralSolver = new InterProceduralSolver(entry)
 }
 
 class InterProceduralSolver(entry: SootMethod) {
@@ -115,7 +117,7 @@ class InterProceduralSolver(entry: SootMethod) {
     */
   def solve() = {
     expand(entry)
-    val current = worklist.removeHeadOption()
+    var current = worklist.removeHeadOption()
     while (current.nonEmpty) {
       val Some((pointer, allocation)) = current
       val delta                       = (Set.empty ++ allocation) -- env(pointer)
@@ -133,6 +135,7 @@ class InterProceduralSolver(entry: SootMethod) {
           }
         case _ => ()
       }
+      current = worklist.removeHeadOption()
     }
   }
 
@@ -140,8 +143,8 @@ class InterProceduralSolver(entry: SootMethod) {
     * @param method
     */
   def expand(method: SootMethod) = if (!reachableMethods.contains(method)) {
-    reachableMethods.add(method)
-    worklist.addAll(method.allocations.map { case (pointer, allocation) => (pointer, mutable.Set(allocation)) })
+    reachableMethods += method
+    worklist ++= method.allocations.map { case (pointer, allocation) => (pointer, mutable.Set(allocation)) }
     method.assigns.foreach { case (to, from) => connect(from, to) }
   }
 
