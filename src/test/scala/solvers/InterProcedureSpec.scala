@@ -65,11 +65,6 @@ class InterProcedureSpec extends AnyFlatSpec with should.Matchers with BeforeAnd
         s"failed for $src -> $expected actually: $name"
       )
     }
-
-//    (it => Allocation(0, it.getName))
-//      .foreach { it =>
-//        println(it.clazz, InterProceduralSolver.dispatch(it, method))
-//      }
   }
 
   "dispatch for static method" should "find the exactly method" in {}

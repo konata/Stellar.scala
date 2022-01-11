@@ -24,10 +24,10 @@ object Initializer {
     Scene.v().loadNecessaryClasses()
   }
 
-  def classOf[T: ClassTag] = Scene.v().sootClassOpt(implicitly[ClassTag[T]].runtimeClass.getName)
+  def clazzOf[T: ClassTag] = Scene.v().sootClassOpt(implicitly[ClassTag[T]].runtimeClass.getName)
 
   def bodyOf[T: ClassTag](name: String) = {
-    val Some(clazz) = classOf[T]
+    val Some(clazz) = clazzOf[T]
     val method      = clazz.methods.find(_.getName.contains(name)).head
     val body        = method.retrieveActiveBody()
     (method, body)
