@@ -104,7 +104,7 @@ object InterProceduralSolver {
     * @return
     */
   def invocations(method: SootMethod, that: VarPointer): Set[CallSite] =
-    method.retrieveActiveBody().units.foldLeft(Set[CallSite]()) { case (acc, ele) =>
+    method.body.units.foldLeft(Set[CallSite]()) { case (acc, ele) =>
       (ele match {
         case SAssignStmt(SLocal(ret, _), SInvokeExpr(receiver, args, abstracts)) =>
           mkCallSite(Some(ret), receiver, args.toSeq, abstracts, ele.lineNumber, that, method)
@@ -186,8 +186,8 @@ class InterProceduralSolver(entry: SootMethod) {
       propagate(pointer, mutable.Set.empty ++ delta)
       pointer match {
         case variable: VarPointer =>
-          val (stores, loads) = reachableMethods.foldLeft((Set[Store](), Set[Load]())) { case (store -> load, it) =>
-            val (s, l) = relatives(variable, it)
+          val stores -> loads = reachableMethods.foldLeft((Set[Store](), Set[Load]())) { case (store -> load, it) =>
+            val s -> l = relatives(variable, it)
             (store ++ s, load ++ l)
           }
           delta.foreach { delta =>
