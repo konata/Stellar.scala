@@ -28,10 +28,10 @@ object InterProceduralSolver {
   def relatives(that: VarPointer, method: SootMethod) = {
     method.units.foldLeft((Set[Store](), Set[Load]())) { case (acc @ (stores, loads), ele) =>
       ele match {
-        case SAssignStmt(SLocal(left, _), SInstanceFieldRef(SLocal(receiver, _), field)) if receiver == that.local =>
-          (stores, loads + ((VarPointer(method.name, left), VarField(VarPointer(method.name, receiver), field.getName))))
         case SAssignStmt(SInstanceFieldRef(SLocal(receiver, _), field), SLocal(right, _)) if receiver == that.local =>
           (stores + ((VarField(VarPointer(method.name, receiver), field.getName), VarPointer(method.getName, right))), loads)
+        case SAssignStmt(SLocal(left, _), SInstanceFieldRef(SLocal(receiver, _), field)) if receiver == that.local =>
+          (stores, loads + ((VarPointer(method.name, left), VarField(VarPointer(method.name, receiver), field.getName))))
         case _ => acc
       }
     }
@@ -113,24 +113,28 @@ class InterProceduralSolver(entry: SootMethod) {
   val env              = mutable.Map[Pointer, mutable.Set[Allocation]]().withDefaultValue(mutable.Set[Allocation]())
 
   /** solve PointsTo Analysis from [[entry]],
-    * when solver end (a.k.a worklist is empty), you can get indirect points-to relationship from [[pointerGraph]] or direct relationship via [[env]] and call-graph from [[callGraph]]
+    * when solver end (i.e worklist is empty), you can get indirect points-to relationship from [[pointerGraph]] or direct relationship via [[env]] and call-graph from [[callGraph]]
     */
   def solve() = {
     expand(entry)
     var current = worklist.removeHeadOption()
     while (current.nonEmpty) {
-      val Some((pointer, allocation)) = current
-      val delta                       = (Set.empty ++ allocation) -- env(pointer)
-      propagate(pointer, mutable.Set.empty ++= delta)
+      val Some(pointer -> allocation) = current
+      val delta                       = allocation -- env(pointer)
+      propagate(pointer, mutable.Set.empty ++ delta)
       pointer match {
         case variable: VarPointer =>
-          val (stores, loads) = reachableMethods.foldLeft((Set[Store](), Set[Load]())) { case ((store, load), it) =>
+          val (stores, loads) = reachableMethods.foldLeft((Set[Store](), Set[Load]())) { case (store -> load, it) =>
             val (s, l) = relatives(variable, it)
             (store ++ s, load ++ l)
           }
           delta.foreach { delta =>
-            stores.foreach { case (variable, pointer) => connect(FieldPointer(delta, variable.field), pointer) }
-            loads.foreach { case (pointer, variable) => connect(pointer, FieldPointer(delta, variable.field)) }
+            stores.foreach { case (variable, pointer) =>
+              connect(pointer, FieldPointer(delta, variable.field))
+            }
+            loads.foreach { case (pointer, variable) =>
+              connect(FieldPointer(delta, variable.field), pointer)
+            }
             handleInvoke(variable, delta)
           }
         case _ => ()
@@ -144,8 +148,8 @@ class InterProceduralSolver(entry: SootMethod) {
     */
   def expand(method: SootMethod) = if (!reachableMethods.contains(method)) {
     reachableMethods += method
-    worklist ++= method.allocations.map { case (pointer, allocation) => (pointer, mutable.Set(allocation)) }
-    method.assigns.foreach { case (to, from) => connect(from, to) }
+    worklist ++= method.allocations.groupMap(_._1)(_._2).map { case key -> value => key -> (mutable.Set.empty ++ value) }
+    method.assigns.foreach { case left -> right => connect(right, left) }
   }
 
   /** accumulate allocation info [[delta]] to [[pointer]], add all successor of [[pointer]] to worklist for pending process
@@ -154,10 +158,11 @@ class InterProceduralSolver(entry: SootMethod) {
     */
   def propagate(pointer: Pointer, delta: mutable.Set[Allocation]) = if (delta.nonEmpty) {
     env.getOrElseUpdate(pointer, mutable.Set()).addAll(delta)
-    for (node <- pointerGraph.find(pointer)) {
-      node.diSuccessors.foreach { node =>
-        worklist += ((node.value, delta))
-      }
+    for {
+      node <- pointerGraph.find(pointer)
+      next <- node.diSuccessors
+    } {
+      worklist += next.value -> (mutable.Set.empty ++ delta)
     }
   }
 
