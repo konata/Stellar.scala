@@ -1,9 +1,15 @@
 package playground.animals;
 
 public class Sparrow extends Bird {
+
     @Override
-    void foo() {
-        System.out.println("sparrow foo");
+    String sound() {
+        return "Sparrow";
+    }
+
+    @Override
+    Animal giveBirthTo() {
+        return this;
     }
 }
 
