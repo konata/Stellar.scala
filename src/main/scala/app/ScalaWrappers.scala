@@ -218,7 +218,7 @@ object ScalaWrappers {
 
     @inline def subSignature = v.getSubSignature
 
-    @inline def body = v.getActiveBody
+    @inline def body = v.retrieveActiveBody()
 
     @inline def body_=(body: Body) = v.setActiveBody(body)
 
@@ -252,16 +252,18 @@ object ScalaWrappers {
     // forall `val x = new Bar()`
     @inline def allocations: Set[(VarPointer, Allocation)] = units.foldLeft(Set[(VarPointer, Allocation)]()) { (acc, ele) =>
       acc ++ (ele match {
-        case SAssignStmt(SLocal(allocated, _), SNewExpr(baseType)) => Some(VarPointer(name, allocated), Allocation(ele.lineNumber, baseType.toString))
-        case _                                                     => None
+        case SAssignStmt(SLocal(allocated, _), SNewExpr(baseType)) =>
+          Some(VarPointer(name, allocated, declaringClass.name), Allocation(ele.lineNumber, baseType.toString))
+        case _ => None
       }).toSet
     }
 
     // forall `val x = y`
     @inline def assigns: Set[(VarPointer, VarPointer)] = units.foldLeft(Set[(VarPointer, VarPointer)]()) { (acc, ele) =>
       acc ++ (ele match {
-        case SAssignStmt(SLocal(assignee, _), SLocal(assigner, _)) => Some(VarPointer(name, assignee), VarPointer(name, assigner))
-        case _                                                     => None
+        case SAssignStmt(SLocal(assignee, _), SLocal(assigner, _)) =>
+          Some(VarPointer(name, assignee, declaringClass.name), VarPointer(name, assigner, declaringClass.name))
+        case _ => None
       }).toSet
     }
 
