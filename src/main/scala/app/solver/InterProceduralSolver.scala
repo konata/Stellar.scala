@@ -1,6 +1,18 @@
 package app.solver
 
-import app.ScalaWrappers.{RichBody, RichChain, RichHost, RichLocal, RichSootMethod, SAssignStmt, SInstanceFieldRef, SInvokeExpr, SLocal, SReturnStmt}
+import app.ScalaWrappers.{
+  RichBody,
+  RichChain,
+  RichHost,
+  RichLocal,
+  RichSootMethod,
+  SAssignStmt,
+  SInstanceFieldRef,
+  SInvokeExpr,
+  SLocal,
+  SNewExpr,
+  SReturnStmt
+}
 import app._
 import app.solver.InterProceduralSolver._
 import scalax.collection.GraphEdge.DiEdge
@@ -26,12 +38,29 @@ object InterProceduralSolver {
     * @return
     */
   def relatives(that: VarPointer, method: SootMethod) = {
+    val declaringClassName = method.declaringClass.getName
     method.units.foldLeft((Set[Store](), Set[Load]())) { case (acc @ (stores, loads), ele) =>
       ele match {
         case SAssignStmt(SInstanceFieldRef(SLocal(receiver, _), field), SLocal(right, _)) if receiver == that.local =>
-          (stores + ((VarField(VarPointer(method.name, receiver), field.getName), VarPointer(method.getName, right))), loads)
+          (
+            stores + (
+              (
+                VarField(VarPointer(method.name, receiver, declaringClassName), field.getName),
+                VarPointer(method.getName, right, declaringClassName)
+              )
+            ),
+            loads
+          )
         case SAssignStmt(SLocal(left, _), SInstanceFieldRef(SLocal(receiver, _), field)) if receiver == that.local =>
-          (stores, loads + ((VarPointer(method.name, left), VarField(VarPointer(method.name, receiver), field.getName))))
+          (
+            stores,
+            loads + (
+              (
+                VarPointer(method.name, left, declaringClassName),
+                VarField(VarPointer(method.name, receiver, declaringClassName), field.getName)
+              )
+            )
+          )
         case _ => acc
       }
     }
@@ -41,19 +70,28 @@ object InterProceduralSolver {
     * @param returns maybe None for `foo.bar(...args)`
     * @param receiver `foo` in `[val ret = ]foo.bar(...args)`, maybe None for static-invoke
     * @param args `args` in `[val ret = ]` foo.bar(..args)`
-    * @param method virtually resolved method for current invocation
+    * @param abstracts virtually resolved method for current invocation
     * @param lineNumber lineNumber of callsite
     * @return
     */
-  def mkCallSite(returns: Option[String], receiver: Option[Value], args: Seq[Value], method: SootMethod, lineNumber: Int, that: VarPointer) = {
+  def mkCallSite(
+      returns: Option[String], // return of calling site
+      receiver: Option[Value], // receiver of calling site
+      args: Seq[Value],        // args of calling site
+      abstracts: SootMethod,   // abstract method to be dispatched
+      lineNumber: Int,         // calling context line number
+      that: VarPointer,        // specs receiver
+      scope: SootMethod        // calling site method
+  ) = {
+    val caller = scope.declaringClass.getName
     receiver match {
-      case Some(SLocal(name, _)) if (name == that.local) && (that.methodName == method.name) =>
+      case Some(SLocal(name, _)) if (name == that.local) && (that.methodName == scope.name) && (that.clazz == caller) =>
         Some(
           CallSite(
-            Some(VarPointer(method.name, name)),
-            method,
-            args.map { case SLocal(name, _) => VarPointer(method.name, name) },
-            returns.map { VarPointer(method.name, _) },
+            Some(that),
+            abstracts,
+            args.map { case SLocal(name, _) => VarPointer(scope.name, name, caller) },
+            returns.map { local => VarPointer(scope.name, local, caller) },
             lineNumber
           )
         )
@@ -68,10 +106,10 @@ object InterProceduralSolver {
   def invocations(method: SootMethod, that: VarPointer): Set[CallSite] =
     method.retrieveActiveBody().units.foldLeft(Set[CallSite]()) { case (acc, ele) =>
       (ele match {
-        case SAssignStmt(SLocal(ret, _), SInvokeExpr(receiver, args, method)) =>
-          mkCallSite(Some(ret), receiver, args.toSeq, method, ele.lineNumber, that)
-        case SInvokeExpr(receiver, args, method) =>
-          mkCallSite(None, receiver, args.toSeq, method, ele.lineNumber, that)
+        case SAssignStmt(SLocal(ret, _), SInvokeExpr(receiver, args, abstracts)) =>
+          mkCallSite(Some(ret), receiver, args.toSeq, abstracts, ele.lineNumber, that, method)
+        case SInvokeExpr(receiver, args, abstracts) =>
+          mkCallSite(None, receiver, args.toSeq, abstracts, ele.lineNumber, that, method)
         case _ => None
       }).toSet ++ acc
     }
@@ -81,8 +119,32 @@ object InterProceduralSolver {
     * @return
     */
   def returnOf(method: SootMethod): Set[VarPointer] = method.retrieveActiveBody().units.foldLeft(Set[VarPointer]()) {
-    case (acc, SReturnStmt(SLocal((name, _)))) => acc + VarPointer(method.name, name)
+    case (acc, SReturnStmt(SLocal((name, _)))) => acc + VarPointer(method.name, name, method.declaringClass.getName)
     case (acc, _)                              => acc
+  }
+
+  /** Return all Allocations Record for [[method]]
+    * @param method
+    * @return
+    */
+  def allocations(method: SootMethod): Set[(VarPointer, Allocation)] = method.units.foldLeft(Set[(VarPointer, Allocation)]()) { (acc, ele) =>
+    acc ++ (ele match {
+      case SAssignStmt(SLocal(allocated, _), SNewExpr(baseType)) =>
+        Some(VarPointer(method.name, allocated, method.declaringClass.getName), Allocation(ele.lineNumber, baseType.toString))
+      case _ => None
+    }).toSet
+  }
+
+  /** Return all Assign Record for [[method]]
+    * @param method
+    * @return
+    */
+  def assigns(method: SootMethod): Set[(VarPointer, VarPointer)] = method.units.foldLeft(Set[(VarPointer, VarPointer)]()) { (acc, ele) =>
+    acc ++ (ele match {
+      case SAssignStmt(SLocal(assignee, _), SLocal(assigner, _)) =>
+        Some(VarPointer(method.name, assignee, method.declaringClass.getName), VarPointer(method.name, assigner, method.declaringClass.getName))
+      case _ => None
+    }).toSet
   }
 
   /** Dispatch [[method]] for object [[allocation]], return the  resolved method
@@ -148,8 +210,8 @@ class InterProceduralSolver(entry: SootMethod) {
     */
   def expand(method: SootMethod) = if (!reachableMethods.contains(method)) {
     reachableMethods += method
-    worklist ++= method.allocations.groupMap(_._1)(_._2).map { case key -> value => key -> (mutable.Set.empty ++ value) }
-    method.assigns.foreach { case left -> right => connect(right, left) }
+    worklist ++= allocations(method).groupMap(_._1)(_._2).map { case key -> value => key -> (mutable.Set.empty ++ value) }
+    assigns(method).foreach { case left -> right => connect(right, left) }
   }
 
   /** accumulate allocation info [[delta]] to [[pointer]], add all successor of [[pointer]] to worklist for pending process
@@ -178,19 +240,23 @@ class InterProceduralSolver(entry: SootMethod) {
     * @param self
     */
   def handleInvoke(receiver: VarPointer, self: Allocation): Unit = {
-    reachableMethods.flatMap(it => invocations(it, receiver)).foreach { case callsite @ CallSite(_, method, args, result, _) =>
-      val target = dispatch(self, method)
+    reachableMethods.flatMap(it => invocations(it, receiver)).foreach { case callsite @ CallSite(_, abstracts, args, result, _) =>
+      val target          = dispatch(self, abstracts)
+      val targetClassName = target.declaringClass.getName
       target.body.thisLocal.foreach { case SLocal(receiverName, _) =>
-        worklist += ((VarPointer(target.name, receiverName), mutable.Set(self)))
+        worklist += ((VarPointer(target.name, receiverName, targetClassName), mutable.Set(self)))
       }
       if (!callGraph.contains((callsite, target))) {
         callGraph.add((callsite, target))
         expand(target)
         args.zipWithIndex.foreach { case (arg, index) =>
-          connect(VarPointer(target.name, target.paramLocals(index).name), arg)
+          connect(arg, VarPointer(target.name, target.paramLocals(index).name, targetClassName))
         }
-        result.foreach { to =>
-          returnOf(target).foreach { from => connect(from, to) }
+        for {
+          to   <- result
+          from <- returnOf(target)
+        } {
+          connect(from, to)
         }
       }
     }

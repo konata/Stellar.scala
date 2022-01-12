@@ -9,13 +9,14 @@ import scalax.collection.mutable.Graph
 import scala.collection.{immutable, mutable}
 import scala.reflect.ClassTag
 
-case class IntraProceduralSolver[T: ClassTag](val methodName: String) {
+case class IntraProceduralSolver[T: ClassTag](methodName: String) {
   type PointerFlowGraph            = Graph[Pointer, DiEdge]
   type MutablePointerAllocationMap = mutable.Map[Pointer, mutable.Set[Allocation]]
 
   val env         = mutable.Map[Pointer, mutable.Set[Allocation]]().withDefaultValue(mutable.Set[Allocation]())
   val graph       = Graph[Pointer, DiEdge]()
-  val (_, bodies) = Builder.ofMethod[T](methodName)
+  val (m, bodies) = Builder.ofMethod[T](methodName)
+  val scopeName   = m.getDeclaringClass.getName
   val worklist    = mutable.Queue[(Pointer, mutable.Set[Allocation])]()
 
   def connect(from: Pointer, to: Pointer) = if ((graph find from ~> to).isEmpty) {
@@ -38,10 +39,10 @@ case class IntraProceduralSolver[T: ClassTag](val methodName: String) {
       ele match {
         // x.foo = y
         case SAssignStmt(SInstanceFieldRef(SLocal(self, _), field), SLocal(name, _)) =>
-          (stores + ((VarField(VarPointer(methodName, self), field.getName), VarPointer(methodName, name))), loads)
+          (stores + ((VarField(VarPointer(methodName, self, scopeName), field.getName), VarPointer(methodName, name, scopeName))), loads)
         // y = x.foo
         case SAssignStmt(SLocal(name, _), SInstanceFieldRef(SLocal(self, _), field)) =>
-          (stores, loads + ((VarPointer(methodName, name), VarField(VarPointer(methodName, self), field.getName))))
+          (stores, loads + ((VarPointer(methodName, name, scopeName), VarField(VarPointer(methodName, self, scopeName), field.getName))))
         case _ => acc
       }
     }
@@ -50,7 +51,7 @@ case class IntraProceduralSolver[T: ClassTag](val methodName: String) {
     worklist.addAll(bodies.units.foldLeft(mutable.Map[Pointer, mutable.Set[Allocation]]().withDefaultValue(mutable.Set[Allocation]())) { (acc, ele) =>
       ele match {
         case SAssignStmt(SLocal(allocated, _), SNewExpr(baseType)) =>
-          acc.getOrElseUpdate(VarPointer(methodName, allocated), mutable.Set()).add(Allocation(ele.lineNumber, baseType.toString))
+          acc.getOrElseUpdate(VarPointer(methodName, allocated, scopeName), mutable.Set()).add(Allocation(ele.lineNumber, baseType.toString))
         case _ => ()
       }
       acc
@@ -58,8 +59,9 @@ case class IntraProceduralSolver[T: ClassTag](val methodName: String) {
 
     // assign
     bodies.units.foreach {
-      case SAssignStmt(SLocal(left, _), SLocal(right, _)) => connect(VarPointer(methodName, right), VarPointer(methodName, left))
-      case _                                              => ()
+      case SAssignStmt(SLocal(left, _), SLocal(right, _)) =>
+        connect(VarPointer(methodName, right, scopeName), VarPointer(methodName, left, scopeName))
+      case _ => ()
     }
 
     var work = worklist.removeHeadOption()
