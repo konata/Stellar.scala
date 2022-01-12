@@ -9,7 +9,7 @@ import scala.reflect.ClassTag
 
 object Builder {
 
-  def initialize() = {
+  def setup() = {
     G.reset()
     val options = Options.v()
     options.allowPhantomRefs = true
@@ -18,6 +18,7 @@ object Builder {
     options.excludes = excludes
     options.keepLineNumber = true
     options.setPhaseOption("jb", "use-original-names:true")
+    options.srcPrec = Options.src_prec_class
     Scene.v().loadNecessaryClasses()
   }
 
