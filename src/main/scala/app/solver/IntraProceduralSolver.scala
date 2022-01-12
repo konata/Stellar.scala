@@ -18,11 +18,9 @@ case class IntraProceduralSolver[T: ClassTag](val methodName: String) {
   val (_, bodies) = Builder.ofMethod[T](methodName)
   val worklist    = mutable.Queue[(Pointer, mutable.Set[Allocation])]()
 
-  def pointsTo(from: Pointer, to: Pointer) = {
-    if ((graph find from ~> to).isEmpty) {
-      graph.add(from ~> to)
-      worklist += ((to, env(from)))
-    }
+  def connect(from: Pointer, to: Pointer) = if ((graph find from ~> to).isEmpty) {
+    graph.add(from ~> to)
+    Option(env(from)).filter(_.nonEmpty).foreach { it => worklist += ((to, it)) }
   }
 
   def propagate(pointer: Pointer, delta: mutable.Set[Allocation]) = if (delta.nonEmpty) {
@@ -34,7 +32,7 @@ case class IntraProceduralSolver[T: ClassTag](val methodName: String) {
     }
   }
 
-  def run() = {
+  def solve() = {
     val (stores, loads) = bodies.units.foldLeft(immutable.Set[(VarField, VarPointer)](), immutable.Set[(VarPointer, VarField)]()) { (acc, ele) =>
       val (stores, loads) = acc
       ele match {
@@ -48,6 +46,7 @@ case class IntraProceduralSolver[T: ClassTag](val methodName: String) {
       }
     }
 
+    // allocate
     worklist.addAll(bodies.units.foldLeft(mutable.Map[Pointer, mutable.Set[Allocation]]().withDefaultValue(mutable.Set[Allocation]())) { (acc, ele) =>
       ele match {
         case SAssignStmt(SLocal(allocated, _), SNewExpr(baseType)) =>
@@ -57,32 +56,28 @@ case class IntraProceduralSolver[T: ClassTag](val methodName: String) {
       acc
     })
 
+    // assign
     bodies.units.foreach {
-      case SAssignStmt(SLocal(left, _), SLocal(right, _)) => pointsTo(VarPointer(methodName, right), VarPointer(methodName, left))
+      case SAssignStmt(SLocal(left, _), SLocal(right, _)) => connect(VarPointer(methodName, right), VarPointer(methodName, left))
       case _                                              => ()
     }
 
     var work = worklist.removeHeadOption()
     while (work.nonEmpty) {
-      val Some((pointer, allocation)) = work
+      val Some(pointer -> allocation) = work
       val delta                       = allocation -- env(pointer)
       propagate(pointer, delta)
 
       pointer match {
         case variable: VarPointer =>
           delta.foreach { delta =>
-            stores.filter(_._1.receiver == variable).foreach { store => pointsTo(store._2, FieldPointer(delta, store._1.field)) }
-            loads.filter(_._2.receiver == variable).foreach { load => pointsTo(FieldPointer(delta, load._2.field), load._1) }
+            stores.filter(_._1.receiver == variable).foreach { store => connect(store._2, FieldPointer(delta, store._1.field)) }
+            loads.filter(_._2.receiver == variable).foreach { load => connect(FieldPointer(delta, load._2.field), load._1) }
           }
-        case _ => None
+        case _ => ()
       }
       work = worklist.removeHeadOption()
-
-      println(worklist)
-      println(env)
-      println(graph)
-      println()
     }
-    Choreographer.dump(graph, env.toMap)
+
   }
 }
