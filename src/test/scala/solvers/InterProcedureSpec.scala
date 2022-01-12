@@ -30,7 +30,7 @@ class InterProcedureSpec extends AnyFlatSpec with should.Matchers with BeforeAnd
   "relatives" should "filter all loads and stores statements " in {
     val (method, bodies) = Builder.ofMethod[Instrumented]("relatives")
     val local            = bodies.getParameterLocal(0)
-    val tuple            = InterProceduralSolver.relatives(VarPointer(method.name, local.getName), method)
+    val tuple            = InterProceduralSolver.relatives(VarPointer(method.name, local.getName, method.declaringClass.getName), method)
     println(tuple)
   }
 
