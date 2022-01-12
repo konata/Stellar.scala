@@ -249,24 +249,6 @@ object ScalaWrappers {
       v.setDeclared(true)
     }
 
-    // forall `val x = new Bar()`
-    @inline def allocations: Set[(VarPointer, Allocation)] = units.foldLeft(Set[(VarPointer, Allocation)]()) { (acc, ele) =>
-      acc ++ (ele match {
-        case SAssignStmt(SLocal(allocated, _), SNewExpr(baseType)) =>
-          Some(VarPointer(name, allocated, declaringClass.name), Allocation(ele.lineNumber, baseType.toString))
-        case _ => None
-      }).toSet
-    }
-
-    // forall `val x = y`
-    @inline def assigns: Set[(VarPointer, VarPointer)] = units.foldLeft(Set[(VarPointer, VarPointer)]()) { (acc, ele) =>
-      acc ++ (ele match {
-        case SAssignStmt(SLocal(assignee, _), SLocal(assigner, _)) =>
-          Some(VarPointer(name, assignee, declaringClass.name), VarPointer(name, assigner, declaringClass.name))
-        case _ => None
-      }).toSet
-    }
-
     @inline def locals = if (v.hasActiveBody) v.body.getLocals else new HashChain[Local]()
 
     @inline def units = if (v.hasActiveBody) v.body.getUnits else new HashChain[SootUnit]()
