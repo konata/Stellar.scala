@@ -5,11 +5,12 @@ import app.solver.{InterProceduralSolver, IntraProceduralSolver}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
-import playground._
 import soot.Local
 import app.ScalaWrappers.{RichBody, RichChain, RichSootMethod, SAssignStmt, SInstanceFieldRef, SInvokeExpr, SLocal}
 import playground.animals.{Animal, Bird, BlackCat, Cat, Dog, Husky, Sparrow}
 import playground.samples.Instrumented
+
+import scala.collection.mutable
 
 class InterProcedureSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfterAll {
 
@@ -32,6 +33,11 @@ class InterProcedureSpec extends AnyFlatSpec with should.Matchers with BeforeAnd
     val tuple            = InterProceduralSolver.relatives(VarPointer(method.name, local.getName), method)
     println(tuple)
   }
+
+  // TODO:
+  "allocations" should "filter all allocation pointer " in {}
+  // TODO:
+  "assigns" should "filter all assigns" in {}
 
   "invocations" should "find all invocation for static-invoke special-invoke and virtual-invoke" in {}
 
@@ -102,8 +108,17 @@ class InterProcedureSpec extends AnyFlatSpec with should.Matchers with BeforeAnd
     }
   }
 
+  "-- operator" should "not change original value" in {
+    val a = mutable.Set(1, 2, 3, 4, 5)
+    val b = mutable.Set(3, 4, 5)
+    val c = a -- b
+    println(a)
+    println(b)
+    println(c)
+  }
+
   override protected def beforeAll(): Unit = {
-    Builder.initialize()
+    Builder.setup()
   }
 
 }

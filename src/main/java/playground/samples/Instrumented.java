@@ -9,15 +9,15 @@ public class Instrumented {
     Events second;
 
     public static void entry(String[] args) {
-        Instrumented app = new Instrumented();
+        Instrumented app = new Instrumented(); // l1
         app.first = new KeyboardEvents(); // first allocation
         app.second = new MouseEvents(); // second allocation
 
-        Instrumented app1 = new Instrumented();
+        Instrumented app1 = new Instrumented(); // l2
         app1.first = new KeyboardEvents(); // third allocation
         app1.second = new MouseEvents(); // fourth allocation
 
-        Instrumented app2 = app1;
+        Instrumented app2 = app1; // l3
         app2.second = app1.first;
     }
 
