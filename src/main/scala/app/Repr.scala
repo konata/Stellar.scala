@@ -7,8 +7,8 @@ case class Allocation(line: Int, clazz: String) {
 }
 
 sealed trait Pointer
-case class VarPointer(methodName: String, local: String) extends Pointer {
-  override def toString = s"${methodName}_$local" // foo_$stack1
+case class VarPointer(methodName: String, local: String, clazz: String) extends Pointer {
+  override def toString = s"${clazz.replaceAll(raw"^.*\.", "")}::$methodName.$local" // foo_$stack1
 }
 case class FieldPointer(alloc: Allocation, fieldName: String) extends Pointer {
   override def toString = s"($alloc).$fieldName" // (10@Foo).bar
