@@ -186,15 +186,17 @@ class InterProceduralSolver(entry: SootMethod) {
       propagate(pointer, mutable.Set.empty ++ delta)
       pointer match {
         case variable: VarPointer =>
-          val stores -> loads = reachableMethods.foldLeft((Set[Store](), Set[Load]())) { case (store -> load, it) =>
-            val s -> l = relatives(variable, it)
+          val (stores, loads) = reachableMethods.foldLeft((Set[Store](), Set[Load]())) { case ((store, load), it) =>
+            val (s, l) = relatives(variable, it)
             (store ++ s, load ++ l)
           }
           delta.foreach { delta =>
             stores.foreach { case (variable, pointer) =>
+              // val foo.x = bar
               connect(pointer, FieldPointer(delta, variable.field))
             }
             loads.foreach { case (pointer, variable) =>
+              // val bar = foo.x
               connect(FieldPointer(delta, variable.field), pointer)
             }
             handleInvoke(variable, delta)
@@ -210,8 +212,8 @@ class InterProceduralSolver(entry: SootMethod) {
     */
   def expand(method: SootMethod) = if (!reachableMethods.contains(method)) {
     reachableMethods += method
-    worklist ++= allocations(method).groupMap(_._1)(_._2).map { case key -> value => key -> (mutable.Set.empty ++ value) }
-    assigns(method).foreach { case left -> right => connect(right, left) }
+    worklist ++= allocations(method).groupMap(_._1)(_._2).map { case (key, value) => key -> (mutable.Set.empty ++ value) }
+    assigns(method).foreach { case (left, right) => connect(right, left) }
   }
 
   /** accumulate allocation info [[delta]] to [[pointer]], add all successor of [[pointer]] to worklist for pending process
@@ -255,9 +257,7 @@ class InterProceduralSolver(entry: SootMethod) {
         for {
           to   <- result
           from <- returnOf(target)
-        } {
-          connect(from, to)
-        }
+        } connect(from, to)
       }
     }
   }

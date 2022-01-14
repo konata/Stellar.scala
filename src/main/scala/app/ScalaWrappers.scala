@@ -310,6 +310,8 @@ object ScalaWrappers {
     @inline def traps = v.getTraps
 
     @inline def parameterLocals = v.getParameterLocals.asScala
+
+    @inline def sources = units.map(it => s"  ${it.toString()} // L${it.lineNumberOpt.getOrElse("0")}").mkString(s"$method {\n", "\n", "\n}")
   }
 
   object SStmt {
