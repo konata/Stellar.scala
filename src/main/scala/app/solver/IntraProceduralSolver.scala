@@ -10,8 +10,7 @@ import scala.collection.{immutable, mutable}
 import scala.reflect.ClassTag
 
 case class IntraProceduralSolver[T: ClassTag](methodName: String) {
-  type PointerFlowGraph            = Graph[Pointer, DiEdge]
-  type MutablePointerAllocationMap = mutable.Map[Pointer, mutable.Set[Allocation]]
+  type PointerFlowGraph = Graph[Pointer, DiEdge]
 
   val env         = mutable.Map[Pointer, mutable.Set[Allocation]]().withDefaultValue(mutable.Set[Allocation]())
   val graph       = Graph[Pointer, DiEdge]()
@@ -80,6 +79,5 @@ case class IntraProceduralSolver[T: ClassTag](methodName: String) {
       }
       work = worklist.removeHeadOption()
     }
-
   }
 }

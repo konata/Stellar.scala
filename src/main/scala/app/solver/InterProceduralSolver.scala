@@ -74,7 +74,7 @@ object InterProceduralSolver {
     * @param lineNumber lineNumber of callsite
     * @return
     */
-  def mkCallSite(
+  def makeCallSite(
       returns: Option[String], // return of calling site
       receiver: Option[Value], // receiver of calling site
       args: Seq[Value],        // args of calling site
@@ -107,9 +107,9 @@ object InterProceduralSolver {
     method.body.units.foldLeft(Set[CallSite]()) { case (acc, ele) =>
       (ele match {
         case SAssignStmt(SLocal(ret, _), SInvokeExpr(receiver, args, abstracts)) =>
-          mkCallSite(Some(ret), receiver, args.toSeq, abstracts, ele.lineNumber, that, method)
+          makeCallSite(Some(ret), receiver, args.toSeq, abstracts, ele.lineNumber, that, method)
         case SInvokeExpr(receiver, args, abstracts) =>
-          mkCallSite(None, receiver, args.toSeq, abstracts, ele.lineNumber, that, method)
+          makeCallSite(None, receiver, args.toSeq, abstracts, ele.lineNumber, that, method)
         case _ => None
       }).toSet ++ acc
     }
@@ -173,6 +173,7 @@ class InterProceduralSolver(entry: SootMethod) {
   val pointerGraph     = Graph[Pointer, DiEdge]()
   val callGraph        = mutable.Set[(CallSite, SootMethod)]()
   val env              = mutable.Map[Pointer, mutable.Set[Allocation]]().withDefaultValue(mutable.Set[Allocation]())
+  val visualizer       = Visualizer(entry.name)
 
   /** solve PointsTo Analysis from [[entry]],
     * when solver end (i.e worklist is empty), you can get indirect points-to relationship from [[pointerGraph]] or direct relationship via [[env]] and call-graph from [[callGraph]]
@@ -180,6 +181,7 @@ class InterProceduralSolver(entry: SootMethod) {
   def solve() = {
     expand(entry)
     var current = worklist.removeHeadOption()
+    visualizer.record(worklist, pointerGraph, env)
     while (current.nonEmpty) {
       val Some(pointer -> allocation) = current
       val delta                       = allocation -- env(pointer)
@@ -204,6 +206,7 @@ class InterProceduralSolver(entry: SootMethod) {
         case _ => ()
       }
       current = worklist.removeHeadOption()
+      visualizer.record(worklist, pointerGraph, env)
     }
   }
 
