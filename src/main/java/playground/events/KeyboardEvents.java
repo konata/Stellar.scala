@@ -1,4 +1,4 @@
-package playground.samples;
+package playground.events;
 
 public class KeyboardEvents implements Events {
     @Override

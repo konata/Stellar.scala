@@ -1,4 +1,4 @@
-package playground.samples;
+package playground.events;
 
 import java.util.Random;
 

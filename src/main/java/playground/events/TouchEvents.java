@@ -1,4 +1,4 @@
-package playground.samples;
+package playground.events;
 
 public class TouchEvents implements Events {
     @Override

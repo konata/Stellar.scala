@@ -8,7 +8,7 @@ import org.scalatest.matchers.should
 import soot.Local
 import app.ScalaWrappers.{RichBody, RichChain, RichSootMethod, SAssignStmt, SInstanceFieldRef, SInvokeExpr, SLocal}
 import playground.animals.{Animal, Bird, BlackCat, Cat, Dog, Husky, Sparrow}
-import playground.samples.Instrumented
+import playground.events.Instrumented
 
 import scala.collection.mutable
 

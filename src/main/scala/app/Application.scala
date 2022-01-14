@@ -2,7 +2,8 @@ package app
 
 import app.solver.{InterProceduralSolver, IntraProceduralSolver}
 import playground.animals.Animal
-import playground.samples.Instrumented
+import playground.events.Instrumented
+import playground.samples.Prototype
 
 object Application {
   def main(args: Array[String]): Unit = {
@@ -18,12 +19,21 @@ object Application {
 //    println("intra solver")
 //    println(solver2.env.mkString("\n"))
 
-    val (main, _)    = Builder.ofMethod[Animal]("main")
-    val animalSolver = InterProceduralSolver(main)
-    animalSolver.solve()
-    println("animal solver")
-    println(animalSolver.env.mkString("\n"))
-    println(animalSolver.reachableMethods.mkString("\n"))
+//    val (main, _) = Builder.ofMethod[Prototype]("main")
+//    val animalSolver = InterProceduralSolver(main)
+//    animalSolver.solve()
+//    println("animal solver")
+//    println(animalSolver.env.mkString("\n"))
+//    println(animalSolver.reachableMethods.mkString("\n"))
 
+    val (main, _) = Builder.ofMethod[Prototype]("main")
+    val solver    = InterProceduralSolver(main)
+    solver.solve()
+    println(solver.env.mkString("\n"))
+    println("")
+    println("")
+    println(solver.pointerGraph.mkString("\n"))
+    println("")
+    println(solver.reachableMethods)
   }
 }
