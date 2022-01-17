@@ -1,7 +1,6 @@
 package playground.samples;
 
 
-
 public class Prototype {
     public static void main(String[] args) {
         Prototype a = new Prototype();
@@ -31,11 +30,13 @@ class Inherited extends Prototype {
 
 
 class Stage extends Prototype {
-    int b = 20;
+    boolean alwaysFalse() {
+        return false;
+    }
 
     @Override
     Prototype foo(Prototype source) {
-        if (b > 20) {
+        if (alwaysFalse()) {
             return source;
         } else {
             return new Inherited();

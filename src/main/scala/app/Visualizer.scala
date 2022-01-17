@@ -16,7 +16,7 @@ case class Visualizer(val id: String) {
       worklist: mutable.Queue[(Pointer, mutable.Set[Allocation])],
       pointerGraph: Graph[Pointer, DiEdge],
       env: mutable.Map[Pointer, mutable.Set[Allocation]]
-  ) = (worklist.toSeq.map { case key -> value => key -> value.toSet }, pointerGraph, env.map { case key -> value => key -> value.toSet }.toMap)
+  ) = (worklist.toSeq.map { case key -> value => key -> value.toSet }, pointerGraph.clone(), env.map { case key -> value => key -> value.toSet }.toMap)
 
   def record(
       worklist: mutable.Queue[(Pointer, mutable.Set[Allocation])],
@@ -32,7 +32,9 @@ case class Visualizer(val id: String) {
 
     def tips(pointer: Pointer) = env.get(pointer) match {
       case None              => Seq(DotAttr(Id("color"), Id("white")))
-      case Some(allocations) => Seq(DotAttr(Id("color"), Id(s"\"#${pixel.drop(allocations.size - 1).take(6).mkString("")}\"")), tooltip(allocations.mkString))
+      case Some(allocations) => Seq(DotAttr(Id("fillcolor"), Id(s"\"#${pixel.slice(allocations.size - 1, allocations.size - 1 + 6).mkString("")}\"")), tooltip(allocations.mkString),
+        DotAttr(Id("label"), Id(s"${pointer.toString}(${allocations.size})"))
+      )
     }
 
     val root = DotRootGraph(directed = true, Some(Id("PFG")))
@@ -47,7 +49,6 @@ case class Visualizer(val id: String) {
         }
       }
     )
-
   }
 }
 

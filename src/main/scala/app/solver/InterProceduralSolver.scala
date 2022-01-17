@@ -186,6 +186,7 @@ class InterProceduralSolver(entry: SootMethod) {
       val Some(pointer -> allocation) = current
       val delta                       = allocation -- env(pointer)
       propagate(pointer, mutable.Set.empty ++ delta)
+      visualizer.record(worklist, pointerGraph, env)
       pointer match {
         case variable: VarPointer =>
           val (stores, loads) = reachableMethods.foldLeft((Set[Store](), Set[Load]())) { case ((store, load), it) =>
@@ -202,6 +203,7 @@ class InterProceduralSolver(entry: SootMethod) {
               connect(FieldPointer(delta, variable.field), pointer)
             }
             handleInvoke(variable, delta)
+            visualizer.record(worklist, pointerGraph, env)
           }
         case _ => ()
       }

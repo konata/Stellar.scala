@@ -30,4 +30,11 @@ object Builder {
     val body        = method.retrieveActiveBody()
     (method, body)
   }
+
+  def ofMethod(className: String, name: String) = {
+    val method = Scene.v().sootClassOpt(className).head.methods.find(_.getName.contains(name)).head
+    val body   = method.retrieveActiveBody()
+    (method, body)
+  }
+
 }
