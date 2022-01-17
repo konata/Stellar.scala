@@ -6,7 +6,7 @@
 
 1. IR (Intermediate Representation)
 
-   NOT source code NOR AST (to avoid language specific constructions)
+   NOT source code NOR AST (to avoid language specific constructs)
 
 2. Soot & TAC / Jimple (Typed TAC)
 
@@ -227,12 +227,15 @@ returns \gets method_{return}
 detailed explanation:
 
 1. Types
-   -. type Allocation(line: Int, clazz: String)
 
-   -. type Pointer = VarPointer(methodName: String, local: String, clazz: String)
+```scala
+  type Allocation(line: Int, clazz: String)
+
+  type Pointer = VarPointer(methodName: String, local: String, clazz: String)
    | FieldPointer(alloc: Allocation, fieldName: String)
 
-   -. type CallSite(receiver: VarPointer?, abstracts: Method, args: Array[Pointer], returns: Pointer?, lineNumber: Int)
+  type CallSite(receiver: VarPointer?, abstracts: Method, args: Array[Pointer], returns: Pointer?, lineNumber: Int)
+```
 
 2. Internal Data Structures
 
