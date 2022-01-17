@@ -218,10 +218,6 @@ a_n \to method_{parameter_{n}}
 returns \gets method_{return}
 ```
 
-```math
-
-```
-
 > P.s logic style formula just like CodeQL
 
 ## A trivial implementation [25min]
@@ -268,13 +264,13 @@ when
 f^k(x) = f^{k-1}(x)
 ```
 
-we say `f` reach its fixed-point at
+we say `f` reach its fixed-point
 
-```math
-f^{k-1}(x)
-```
+## object sensitive
 
-## k-CFA
+## context sensitive & k-CFA
+
+## flow sensitive
 
 ## Reference:
 
