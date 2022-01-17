@@ -1,7 +1,6 @@
 package app
 
 import app.ScalaWrappers.{RichBody, RichSootMethod}
-import app.solver.InterProceduralSolver
 import playground.samples.Prototype
 import org.json4s.native.JsonMethods._
 import org.json4s.JsonDSL.WithDouble._
@@ -23,10 +22,10 @@ object Application {
     val (main, _)   = Builder.ofMethod[Prototype]("main")
     val destination = "prototype"
 
-    val (foo, _) = Builder.ofMethod("playground.samples.Stage", "foo")
-    println(foo.body.sources)
+//    val (foo, _) = Builder.ofMethod("playground.samples.Stage", "foo")
+//    println(foo.body.sources)
 
-    val solver = InterProceduralSolver(main)
+    val solver = Solver(main)
     solver.solve()
     val graphviz = solver.visualizer.dump()
     val output   = compact(render(graphviz.toList))

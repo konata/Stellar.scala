@@ -1,4 +1,4 @@
-package app.solver
+package app
 
 import app.ScalaWrappers.{
   RichBody,
@@ -13,8 +13,7 @@ import app.ScalaWrappers.{
   SNewExpr,
   SReturnStmt
 }
-import app._
-import app.solver.InterProceduralSolver._
+import app.Solver.{Load, Store, allocations, assigns, dispatch, invocations, relatives, returnOf}
 import scalax.collection.GraphEdge.DiEdge
 import scalax.collection.GraphPredef.EdgeAssoc
 import scalax.collection.mutable.Graph
@@ -22,7 +21,7 @@ import soot.{Scene, SootMethod, Value}
 
 import scala.collection.mutable
 
-object InterProceduralSolver {
+object Solver {
   type Store  = (VarField, VarPointer)
   type Load   = (VarPointer, VarField)
   type Stores = Set[Store]
@@ -164,10 +163,10 @@ object InterProceduralSolver {
     targetMethod
   }
 
-  def apply(entry: SootMethod): InterProceduralSolver = new InterProceduralSolver(entry)
+  def apply(entry: SootMethod): Solver = new Solver(entry)
 }
 
-class InterProceduralSolver(entry: SootMethod) {
+class Solver(entry: SootMethod) {
   val reachableMethods = mutable.Set[SootMethod]()
   val worklist         = mutable.Queue[(Pointer, mutable.Set[Allocation])]()
   val pointerGraph     = Graph[Pointer, DiEdge]()

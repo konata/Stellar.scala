@@ -1,7 +1,6 @@
 package solvers
 
-import app.{Allocation, Builder, VarPointer}
-import app.solver.{InterProceduralSolver, IntraProceduralSolver}
+import app.{Allocation, Builder, Solver, VarPointer}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should
@@ -16,7 +15,7 @@ class InterProcedureSpec extends AnyFlatSpec with should.Matchers with BeforeAnd
 
   "returnsOf" should "find all possible return vars" in {
     val (method, body) = Builder.ofMethod[Instrumented]("foo")
-    val returns        = InterProceduralSolver.returnOf(method)
+    val returns        = Solver.returnOf(method)
     returns.size should be(3)
     raw"""\s+""".r.split("0 3 4").foreach { it =>
       returns.mkString.contains(it) should be(true)
@@ -30,7 +29,7 @@ class InterProcedureSpec extends AnyFlatSpec with should.Matchers with BeforeAnd
   "relatives" should "filter all loads and stores statements " in {
     val (method, bodies) = Builder.ofMethod[Instrumented]("relatives")
     val local            = bodies.getParameterLocal(0)
-    val tuple            = InterProceduralSolver.relatives(VarPointer(method.name, local.getName, method.declaringClass.getName), method)
+    val tuple            = Solver.relatives(VarPointer(method.name, local.getName, method.declaringClass.getName), method)
     println(tuple)
   }
 
@@ -66,7 +65,7 @@ class InterProcedureSpec extends AnyFlatSpec with should.Matchers with BeforeAnd
         classOf[Sparrow]
       )
     ).foreach { case (src, expected) =>
-      val name = InterProceduralSolver.dispatch(Allocation(0, src.getName), method).declaringClass.getName
+      val name = Solver.dispatch(Allocation(0, src.getName), method).declaringClass.getName
       assert(
         name == expected.getName,
         s"failed for $src -> $expected actually: $name"
