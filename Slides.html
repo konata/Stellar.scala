@@ -358,7 +358,7 @@ s <span class="token operator">=</span> s2
 
 </pre></li>
 </ol>
-<h2 class="mume-header" id="taxonomy-2min">Taxonomy [2min]</h2>
+<h2 class="mume-header" id="taxonomy-5min">Taxonomy [5min]</h2>
 
 <pre data-role="codeBlock" data-info="java" class="language-java"><span class="token keyword keyword-void">void</span> <span class="token function">foo</span><span class="token punctuation">(</span>src<span class="token operator">:</span> <span class="token class-name">Source</span><span class="token punctuation">)</span>  <span class="token punctuation">{</span>
    <span class="token class-name">Source</span> bar <span class="token operator">=</span> src<span class="token punctuation">;</span>
@@ -400,7 +400,7 @@ bar<span class="token punctuation">.</span>foo <span class="token operator">=</s
 <p>why don&apos;t we explicit process statements like <code>foo.a = bar.b</code> and <code>foo.a.b.c = a</code> ?</p>
 <p>=&gt; 3AC</p>
 </blockquote>
-<h2 class="mume-header" id="rules">Rules</h2>
+<h2 class="mume-header" id="rules-18min">Rules [18min]</h2>
 
 <h3 class="mume-header" id="new">New</h3>
 
@@ -429,13 +429,13 @@ bar<span class="token punctuation">.</span>foo <span class="token operator">=</s
 <span class="token keyword keyword-def">def</span> bar<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token punctuation">{</span>
    <span class="token keyword keyword-val">val</span> returns <span class="token operator">=</span> receiver<span class="token punctuation">.</span>method<span class="token punctuation">(</span>a1<span class="token punctuation">,</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token punctuation">,</span>an<span class="token punctuation">)</span>
 <span class="token punctuation">}</span>
-</pre><p></p><div class="mathjax-exps">$$`\frac { o_i \in pt(receiver)    \\    m = Dispatch(o_i, method)    \\    o_u \in pt(a_j), 1 \leq j \leq n    \\    o_{returns} \in pt(method_{return}) } { o_i \in pt(method_{this})   \\   o_u \in pt(method_{parameter_j}),  1 \leq j \leq n   \\   o_{returns} \in pt(returns) } `$$</div><p></p><p>for all</p>
-<p></p><div class="mathjax-exps">$$`a_1 \to method_{parameter_{1}} \\ ... \\ a_n \to method_{parameter_{n}} \\ returns \gets method_{return} `$$</div><p></p><p></p><blockquote>
+</pre><p></p><div class="mathjax-exps">$$`\frac { o_i \in pt(receiver),    \\    m = Dispatch(o_i, method),    \\    o_u \in pt(a_j), 1 \leq j \leq n,    \\    o_{returns} \in pt(method_{return}) } { o_i \in pt(method_{this}),   \\   o_u \in pt(method_{parameter_j}),  1 \leq j \leq n,   \\   o_{returns} \in pt(returns) } `$$</div><p></p><p>for all</p>
+<p></p><div class="mathjax-exps">$$`a_1 \to method_{parameter_{1}} \\ ... \\ a_n \to method_{parameter_{n}} \\ returns \gets method_{return} `$$</div><p></p><blockquote>
 <p>P.s logic style formula just like CodeQL</p>
 </blockquote>
-<h3 class="mume-header" id="a-trivial-implementation">a trivial implementation</h3>
+<h2 class="mume-header" id="a-trivial-implementation-25min">A trivial implementation [25min]</h2>
 
-<p><a href="http://gitlab.example.com/natsuki/stellaris/-/blob/master/src/main/scala/app/Solver.scala">Solver.scala</a></p>
+<p><a href="http://10.117.7.201//natsuki/stellaris/-/blob/master/src/main/scala/app/Solver.scala">Solver.scala</a></p>
 <p>detailed explanation:</p>
 <ol>
 <li>
@@ -455,16 +455,20 @@ bar<span class="token punctuation">.</span>foo <span class="token operator">=</s
 <span class="token keyword keyword-val">val</span> env              <span class="token operator">=</span> mutable<span class="token punctuation">.</span>Map<span class="token punctuation">[</span>Pointer<span class="token punctuation">,</span> mutable<span class="token punctuation">.</span>Set<span class="token punctuation">[</span>Allocation<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>withDefaultValue<span class="token punctuation">(</span>mutable<span class="token punctuation">.</span>Set<span class="token punctuation">[</span>Allocation<span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
 </pre></li>
 <li>
-<p>Solve:</p>
+<p>Solve &amp; Interactive Visualize</p>
 </li>
 </ol>
-<h2 class="mume-header" id="fixed-point-theorem-lattice">Fixed Point Theorem &amp; Lattice</h2>
+<h2 class="mume-header" id="fixed-point-theorem-lattice-optional">Fixed Point Theorem &amp; Lattice [Optional]</h2>
 
 <h3 class="mume-header" id="iterative-algorithm">iterative algorithm</h3>
 
 <p></p><div class="mathjax-exps">$$`f(x) = y\\ f^2(x) = f(f(x))\\ ...\\ f^n(x) = f(f^{n-1}(x))\\ `$$</div><p></p><p>when</p>
-<p></p><div class="mathjax-exps">$$`f^k(x) = f^{k-1}(x) `$$</div><p></p><p>we say <code>f</code> reach its fixed-point at</p>
-<p></p><div class="mathjax-exps">$$`f^{k-1}(x) `$$</div><p></p><h2 class="mume-header" id="k-cfa">k-CFA</h2>
+<p></p><div class="mathjax-exps">$$`f^k(x) = f^{k-1}(x) `$$</div><p></p><p>we say <code>f</code> reach its fixed-point</p>
+<h2 class="mume-header" id="object-sensitive">object sensitive</h2>
+
+<h2 class="mume-header" id="context-sensitive-k-cfa">context sensitive &amp; k-CFA</h2>
+
+<h2 class="mume-header" id="flow-sensitive">flow sensitive</h2>
 
 <h2 class="mume-header" id="reference">Reference:</h2>
 
