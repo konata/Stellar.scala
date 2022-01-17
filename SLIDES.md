@@ -89,7 +89,7 @@
 
    ```
 
-## Taxonomy [2min]
+## Taxonomy [5min]
 
 ```java
 void foo(src: Source)  {
@@ -136,7 +136,7 @@ val x = bar.baz(x, y, ...)
 >
 > => 3AC
 
-## Rules
+## Rules [18min]
 
 ### New
 
@@ -190,17 +190,17 @@ def bar() = {
 
 ```math
 \frac
-{ o_i \in pt(receiver)
+{ o_i \in pt(receiver),
    \\
-   m = Dispatch(o_i, method)
+   m = Dispatch(o_i, method),
    \\
-   o_u \in pt(a_j), 1 \leq j \leq n
+   o_u \in pt(a_j), 1 \leq j \leq n,
    \\
    o_{returns} \in pt(method_{return})
 }
-{ o_i \in pt(method_{this})
+{ o_i \in pt(method_{this}),
   \\
-  o_u \in pt(method_{parameter_j}),  1 \leq j \leq n
+  o_u \in pt(method_{parameter_j}),  1 \leq j \leq n,
   \\
   o_{returns} \in pt(returns)
 }
@@ -224,9 +224,9 @@ returns \gets method_{return}
 
 > P.s logic style formula just like CodeQL
 
-### a trivial implementation
+## A trivial implementation [25min]
 
-[Solver.scala](http://gitlab.example.com/natsuki/stellaris/-/blob/master/src/main/scala/app/Solver.scala)
+[Solver.scala](http://10.117.7.201//natsuki/stellaris/-/blob/master/src/main/scala/app/Solver.scala)
 
 detailed explanation:
 
@@ -249,11 +249,9 @@ detailed explanation:
    val env              = mutable.Map[Pointer, mutable.Set[Allocation]]().withDefaultValue(mutable.Set[Allocation]())
    ```
 
-3. Solve:
+3. Solve & Interactive Visualize
 
-
-
-## Fixed Point Theorem & Lattice
+## Fixed Point Theorem & Lattice [Optional]
 
 ### iterative algorithm
 
@@ -280,7 +278,10 @@ f^{k-1}(x)
 
 ## Reference:
 
-1. https://matt.might.net/articles/implementation-of-kcfa-and-0cfa/
+1. https://en.wikipedia.org/wiki/Pointer_analysis
+2. https://matt.might.net/articles/implementation-of-kcfa-and-0cfa/
+3. https://www.cs.cmu.edu/~aldrich/courses/15-819O-13sp/resources/pointer.pdf
+4. https://pascal-group.bitbucket.io/
 
 ```
 
