@@ -6,7 +6,7 @@
 
 1. IR (Intermediate Representation)
 
-   NOT source code or AST (to avoid language specific constructions)
+   NOT source code NOR AST (to avoid language specific constructions)
 
 2. Soot & TAC / Jimple (Typed TAC)
 
@@ -132,9 +132,9 @@ val z = bar.foo
 val x = bar.baz(x, y, ...)
 ```
 
-> why don't we explicit process statements like `foo.a = bar.b` and `foo.a.b.c = a` ?
+> why don't we process statements like `foo.a = bar.b` and `foo.a.b.c = a` explicitly ?
 >
-> => 3AC
+> => TAC
 
 ## Rules [18min]
 
@@ -275,10 +275,6 @@ we say `f` reach its fixed-point
 ## Reference:
 
 1. https://en.wikipedia.org/wiki/Pointer_analysis
-2. https://matt.might.net/articles/implementation-of-kcfa-and-0cfa/
-3. https://www.cs.cmu.edu/~aldrich/courses/15-819O-13sp/resources/pointer.pdf
-4. https://pascal-group.bitbucket.io/
-
-```
-
-```
+2. https://pascal-group.bitbucket.io/
+3. https://matt.might.net/articles/implementation-of-kcfa-and-0cfa/
+4. https://www.cs.cmu.edu/~aldrich/courses/15-819O-13sp/resources/pointer.pdf
