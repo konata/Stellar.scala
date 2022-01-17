@@ -40,6 +40,7 @@ object Solver {
     val declaringClassName = method.declaringClass.getName
     method.units.foldLeft((Set[Store](), Set[Load]())) { case (acc @ (stores, loads), ele) =>
       ele match {
+        // that.foo = bar
         case SAssignStmt(SInstanceFieldRef(SLocal(receiver, _), field), SLocal(right, _)) if receiver == that.local =>
           (
             stores + (
@@ -50,6 +51,7 @@ object Solver {
             ),
             loads
           )
+        // foo = that.bar
         case SAssignStmt(SLocal(left, _), SInstanceFieldRef(SLocal(receiver, _), field)) if receiver == that.local =>
           (
             stores,
@@ -105,8 +107,10 @@ object Solver {
   def invocations(method: SootMethod, that: VarPointer): Set[CallSite] =
     method.body.units.foldLeft(Set[CallSite]()) { case (acc, ele) =>
       (ele match {
+        // ret = that.method(x,y,z)
         case SAssignStmt(SLocal(ret, _), SInvokeExpr(receiver, args, abstracts)) =>
           makeCallSite(Some(ret), receiver, args.toSeq, abstracts, ele.lineNumber, that, method)
+        // that.method(x,y,z)
         case SInvokeExpr(receiver, args, abstracts) =>
           makeCallSite(None, receiver, args.toSeq, abstracts, ele.lineNumber, that, method)
         case _ => None
@@ -118,6 +122,7 @@ object Solver {
     * @return
     */
   def returnOf(method: SootMethod): Set[VarPointer] = method.retrieveActiveBody().units.foldLeft(Set[VarPointer]()) {
+    //  val returns = receiver.foo(...args)
     case (acc, SReturnStmt(SLocal((name, _)))) => acc + VarPointer(method.name, name, method.declaringClass.getName)
     case (acc, _)                              => acc
   }
@@ -128,6 +133,7 @@ object Solver {
     */
   def allocations(method: SootMethod): Set[(VarPointer, Allocation)] = method.units.foldLeft(Set[(VarPointer, Allocation)]()) { (acc, ele) =>
     acc ++ (ele match {
+      // val a = new Foobar()
       case SAssignStmt(SLocal(allocated, _), SNewExpr(baseType)) =>
         Some(VarPointer(method.name, allocated, method.declaringClass.getName), Allocation(ele.lineNumber, baseType.toString))
       case _ => None
@@ -140,6 +146,7 @@ object Solver {
     */
   def assigns(method: SootMethod): Set[(VarPointer, VarPointer)] = method.units.foldLeft(Set[(VarPointer, VarPointer)]()) { (acc, ele) =>
     acc ++ (ele match {
+      // val a = b
       case SAssignStmt(SLocal(assignee, _), SLocal(assigner, _)) =>
         Some(VarPointer(method.name, assignee, method.declaringClass.getName), VarPointer(method.name, assigner, method.declaringClass.getName))
       case _ => None
@@ -235,7 +242,7 @@ class Solver(entry: SootMethod) {
   }
 
   /** handle invocation (virtual-invoke / static-invoke) related to [[receiver]] for its allocation [[self]],
-    * this procedure involves 3 steps:
+    * this procedure involves 6 steps:
     *  1. dispatch to the right method per allocation info [[self]]
     *  2. connect current allocation site with [[this]] in target method by adding to worklist
     *  3. extend call graph

@@ -1,7 +1,9 @@
 package playground.samples;
 
-
 public class Prototype {
+
+    Prototype field;
+
     public static void main(String[] args) {
         Prototype a = new Prototype();
         Prototype b = new Inherited();
@@ -12,6 +14,7 @@ public class Prototype {
         Prototype _state = stage.foo(stage);
         Prototype _a = stage.foo(a);
         Prototype _b = stage.foo(b);
+        _state.field = stage.foo(a);
     }
 
     Prototype foo(Prototype source) {

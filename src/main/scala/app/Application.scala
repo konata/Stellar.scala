@@ -22,8 +22,8 @@ object Application {
     val (main, _)   = Builder.ofMethod[Prototype]("main")
     val destination = "prototype"
 
-//    val (foo, _) = Builder.ofMethod("playground.samples.Stage", "foo")
-//    println(foo.body.sources)
+    val (foo, _) = Builder.ofMethod("playground.samples.Stage", "foo")
+    println(foo.body.sources)
 
     val solver = Solver(main)
     solver.solve()
