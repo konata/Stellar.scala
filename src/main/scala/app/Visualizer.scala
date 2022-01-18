@@ -32,7 +32,7 @@ case class Visualizer(val id: String) {
 
     def tips(pointer: Pointer) = env.get(pointer) match {
       case None              => Seq(DotAttr(Id("color"), Id("white")))
-      case Some(allocations) => Seq(DotAttr(Id("fillcolor"), Id(s"\"#${pixel.slice(allocations.size - 1, allocations.size - 1 + 6).mkString("")}\"")), tooltip(allocations.mkString),
+      case Some(allocations) => Seq(DotAttr(Id("color"), Id(s"\"#${pixel.slice(allocations.size - 1, allocations.size - 1 + 6).mkString("")}\"")), tooltip(allocations.mkString),
         DotAttr(Id("label"), Id(s"${pointer.toString}(${allocations.size})"))
       )
     }
