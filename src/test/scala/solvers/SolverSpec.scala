@@ -11,7 +11,7 @@ import playground.events.Instrumented
 
 import scala.collection.mutable
 
-class InterProcedureSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfterAll {
+class SolverSpec extends AnyFlatSpec with should.Matchers with BeforeAndAfterAll {
 
   "returnsOf" should "find all possible return vars" in {
     val (method, body) = Builder.ofMethod[Instrumented]("foo")

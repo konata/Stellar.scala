@@ -4,8 +4,8 @@ import app.ScalaWrappers.{RichBody, RichSootMethod}
 import playground.samples.Prototype
 import org.json4s.native.JsonMethods._
 import org.json4s.JsonDSL.WithDouble._
-import playground.animals.Animal
 import playground.events.Instrumented
+import playground.susi.Susi
 
 import java.io.FileWriter
 
@@ -19,11 +19,11 @@ object Application {
 //    val (main, _)   = Builder.ofMethod[Instrumented]("entry")
 //    val destination = "instrumented"
 
-    val (main, _)   = Builder.ofMethod[Prototype]("main")
-    val destination = "prototype"
+    val (main, _)   = Builder.ofMethod[Susi]("main")
+    val destination = "animal"
 
-    val (foo, _) = Builder.ofMethod("playground.samples.Stage", "foo")
-    println(foo.body.sources)
+//    val (foo, _) = Builder.ofMethod("playground.samples.Stage", "foo")
+//    println(foo.body.sources)
 
     val solver = Solver(main)
     solver.solve()

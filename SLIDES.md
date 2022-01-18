@@ -213,7 +213,7 @@ def bar() = {
 \frac
 { o_i \in pt(receiver),
    \\
-   m = Dispatch(o_i, method),
+   method = Dispatch(o_i, method),
    \\
    o_u \in pt(a_j), 1 \leq j \leq n,
    \\

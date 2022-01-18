@@ -41,6 +41,8 @@ object Solver {
     method.units.foldLeft((Set[Store](), Set[Load]())) { case (acc @ (stores, loads), ele) =>
       ele match {
         // that.foo = bar
+        case _ if that.clazz != declaringClassName || that.methodName != method.getName =>
+          acc
         case SAssignStmt(SInstanceFieldRef(SLocal(receiver, _), field), SLocal(right, _)) if receiver == that.local =>
           (
             stores + (
