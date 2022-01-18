@@ -1,5 +1,5 @@
 <!DOCTYPE html><html><head>
-      <title>Slides</title>
+      <title>SLIDES</title>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       
@@ -268,15 +268,16 @@ pre[data-line] .line-highlight[data-end]:after {
       <div class="mume markdown-preview  ">
       <h1 class="mume-header" id="static-analysis-pointer-analysis-concepts-fundamental">Static Analysis &amp; Pointer Analysis Concepts &amp; Fundamental</h1>
 
-<h2 class="mume-header" id="static-analysis-background-facility-10min">Static Analysis Background &amp; Facility [10min]</h2>
+<h2 class="mume-header" id="static-analysis-background-contraption-10min">Static Analysis Background &amp; Contraption [10min]</h2>
 
 <ol start="0">
 <li>
-<p>Definition</p>
+<p>Definition (from wiki)<br>
+Static program analysis is the analysis of computer software performed without executing any programs</p>
 </li>
 <li>
-<p>IR (Intermediate Representation)</p>
-<p>NOT source code or AST (to avoid language specific constructions)</p>
+<p>IR (Intermediate Representation)<br>
+NOT source code NOR AST (to avoid language specific constructs)</p>
 </li>
 <li>
 <p>Soot &amp; TAC / Jimple (Typed TAC)</p>
@@ -320,7 +321,11 @@ than <strong>200</strong> possible instructions in Java bytecode.</p>
 </ol>
 <h2 class="mume-header" id="pointer-analysis-domains-concepts-15min">Pointer Analysis Domains &amp; Concepts [15min]</h2>
 
-<ol>
+<ol start="0">
+<li>
+<p>Definition (from wiki)<br>
+A static code analysis technique that establishes which pointers, or heap references, can point to which <s>variables</s> allocation, It is often a component of more complex analyses such as escape analysis</p>
+</li>
 <li>
 <p>Pointers (Reference Types)<br>
 -. Variables likes <code>a</code></p>
@@ -360,24 +365,39 @@ s <span class="token operator">=</span> s2
 </ol>
 <h2 class="mume-header" id="taxonomy-5min">Taxonomy [5min]</h2>
 
-<pre data-role="codeBlock" data-info="java" class="language-java"><span class="token keyword keyword-void">void</span> <span class="token function">foo</span><span class="token punctuation">(</span>src<span class="token operator">:</span> <span class="token class-name">Source</span><span class="token punctuation">)</span>  <span class="token punctuation">{</span>
-   <span class="token class-name">Source</span> bar <span class="token operator">=</span> src<span class="token punctuation">;</span>
-   <span class="token class-name">Log</span><span class="token punctuation">.</span><span class="token function">e</span><span class="token punctuation">(</span>bar<span class="token punctuation">.</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// line a1</span>
-   bar <span class="token operator">=</span> <span class="token keyword keyword-new">new</span> <span class="token class-name">Source</span><span class="token punctuation">(</span>__LINE__<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// line a</span>
-   <span class="token class-name">Log</span><span class="token punctuation">.</span><span class="token function">e</span><span class="token punctuation">(</span>bar<span class="token punctuation">.</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// line a2</span>
+<pre data-role="codeBlock" data-info="java" class="language-java"><span class="token keyword keyword-class">class</span> <span class="token class-name">Base</span> <span class="token punctuation">{</span>
+   <span class="token class-name">Source</span> spec <span class="token operator">=</span> <span class="token keyword keyword-new">new</span> <span class="token class-name">Source</span><span class="token punctuation">(</span>__LINE__<span class="token punctuation">)</span> <span class="token comment">// line d</span>
+   <span class="token keyword keyword-abstract">abstract</span> <span class="token keyword keyword-void">void</span> <span class="token function">foo</span><span class="token punctuation">(</span>src<span class="token operator">:</span> <span class="token class-name">Source</span><span class="token punctuation">)</span>
+   <span class="token keyword keyword-void">void</span> <span class="token function">onResume</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+      <span class="token function">foo</span><span class="token punctuation">(</span><span class="token keyword keyword-new">new</span> <span class="token class-name">Source</span><span class="token punctuation">(</span>__LINE__<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// line b</span>
+   <span class="token punctuation">}</span>
+
+   <span class="token keyword keyword-void">void</span> <span class="token function">onStart</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+      <span class="token function">foo</span><span class="token punctuation">(</span><span class="token keyword keyword-new">new</span> <span class="token class-name">Source</span><span class="token punctuation">(</span>__LINE__<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// line c</span>
+   <span class="token punctuation">}</span>
 <span class="token punctuation">}</span>
 
-<span class="token keyword keyword-void">void</span> <span class="token function">onResume</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-   <span class="token function">foo</span><span class="token punctuation">(</span><span class="token keyword keyword-new">new</span> <span class="token class-name">Source</span><span class="token punctuation">(</span>__LINE__<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// line b</span>
+<span class="token keyword keyword-class">class</span> <span class="token class-name">One</span> <span class="token keyword keyword-extends">extends</span> <span class="token class-name">Base</span> <span class="token punctuation">{</span>
+   <span class="token keyword keyword-void">void</span> <span class="token function">foo</span><span class="token punctuation">(</span>src<span class="token operator">:</span> <span class="token class-name">Source</span><span class="token punctuation">)</span>  <span class="token punctuation">{</span>
+      <span class="token class-name">Source</span> bar <span class="token operator">=</span> src<span class="token punctuation">;</span>
+      <span class="token class-name">Log</span><span class="token punctuation">.</span><span class="token function">e</span><span class="token punctuation">(</span>bar<span class="token punctuation">.</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// line a1</span>
+      bar <span class="token operator">=</span> <span class="token keyword keyword-new">new</span> <span class="token class-name">Source</span><span class="token punctuation">(</span>__LINE__<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// line a</span>
+      <span class="token class-name">Log</span><span class="token punctuation">.</span><span class="token function">e</span><span class="token punctuation">(</span>bar<span class="token punctuation">.</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// line a2</span>
+   <span class="token punctuation">}</span>
 <span class="token punctuation">}</span>
 
-<span class="token keyword keyword-void">void</span> <span class="token function">onStart</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
-   <span class="token function">foo</span><span class="token punctuation">(</span><span class="token keyword keyword-new">new</span> <span class="token class-name">Source</span><span class="token punctuation">(</span>__LINE__<span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// line c</span>
+<span class="token keyword keyword-class">class</span> <span class="token class-name">Two</span> <span class="token keyword keyword-extends">extends</span> <span class="token class-name">One</span> <span class="token punctuation">{</span>
+   <span class="token keyword keyword-void">void</span> <span class="token function">foo</span><span class="token punctuation">(</span>src<span class="token operator">:</span> <span class="token class-name">Source</span><span class="token punctuation">)</span>  <span class="token punctuation">{</span>
+      <span class="token class-name">Source</span> bar <span class="token operator">=</span> src<span class="token punctuation">;</span>
+      <span class="token class-name">Log</span><span class="token punctuation">.</span><span class="token function">e</span><span class="token punctuation">(</span>bar<span class="token punctuation">.</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// line t1</span>
+      bar <span class="token operator">=</span> <span class="token keyword keyword-new">new</span> <span class="token class-name">Source</span><span class="token punctuation">(</span>__LINE__<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// line t</span>
+      <span class="token class-name">Log</span><span class="token punctuation">.</span><span class="token function">e</span><span class="token punctuation">(</span>bar<span class="token punctuation">.</span>line<span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">// line t2</span>
+   <span class="token punctuation">}</span>
 <span class="token punctuation">}</span>
 </pre><ol>
 <li>Heap Abstraction (Allocation-Sites) | ...Source Definition?</li>
-<li>Context Sensitive | Context Insensitive (**)</li>
 <li>Flow Sensitive | Flow Insensitive (**)</li>
+<li>Context Sensitive | Context Insensitive (**)</li>
 <li>Whole-Program Analysis | On-Demand Driven</li>
 </ol>
 <h2 class="mume-header" id="pointer-affecting-statements-15min">Pointer Affecting Statements [15min]</h2>
@@ -397,11 +417,15 @@ bar<span class="token punctuation">.</span>foo <span class="token operator">=</s
 <span class="token comment">// Call (virtual / special / static / interface / dynamic)</span>
 <span class="token keyword keyword-val">val</span> x <span class="token operator">=</span> bar<span class="token punctuation">.</span>baz<span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">)</span>
 </pre><blockquote>
-<p>why don&apos;t we explicit process statements like <code>foo.a = bar.b</code> and <code>foo.a.b.c = a</code> ?</p>
-<p>=&gt; 3AC</p>
+<p>why don&apos;t we process statements like <code>foo.a = bar.b</code> and <code>foo.a.b.c = a</code> explicitly ?</p>
+<p>=&gt; TAC</p>
 </blockquote>
 <h2 class="mume-header" id="rules-18min">Rules [18min]</h2>
 
+<ol>
+<li>Andersen&apos;s Algorithm (Cubic)</li>
+<li>Steensgaard&apos;s Algorithm (Almost linear)</li>
+</ol>
 <h3 class="mume-header" id="new">New</h3>
 
 <p><code>val x = new Bar() // at line i</code></p>
@@ -429,7 +453,7 @@ bar<span class="token punctuation">.</span>foo <span class="token operator">=</s
 <span class="token keyword keyword-def">def</span> bar<span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token punctuation">{</span>
    <span class="token keyword keyword-val">val</span> returns <span class="token operator">=</span> receiver<span class="token punctuation">.</span>method<span class="token punctuation">(</span>a1<span class="token punctuation">,</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token punctuation">,</span>an<span class="token punctuation">)</span>
 <span class="token punctuation">}</span>
-</pre><p></p><div class="mathjax-exps">$$`\frac { o_i \in pt(receiver),    \\    m = Dispatch(o_i, method),    \\    o_u \in pt(a_j), 1 \leq j \leq n,    \\    o_{returns} \in pt(method_{return}) } { o_i \in pt(method_{this}),   \\   o_u \in pt(method_{parameter_j}),  1 \leq j \leq n,   \\   o_{returns} \in pt(returns) } `$$</div><p></p><p>for all</p>
+</pre><p></p><div class="mathjax-exps">$$`\frac { o_i \in pt(receiver),    \\    method = Dispatch(o_i, method),    \\    o_u \in pt(a_j), 1 \leq j \leq n,    \\    o_{returns} \in pt(method_{return}) } { o_i \in pt(method_{this}),   \\   o_u \in pt(method_{parameter_j}),  1 \leq j \leq n,   \\   o_{returns} \in pt(returns) } `$$</div><p></p><p>for all</p>
 <p></p><div class="mathjax-exps">$$`a_1 \to method_{parameter_{1}} \\ ... \\ a_n \to method_{parameter_{n}} \\ returns \gets method_{return} `$$</div><p></p><blockquote>
 <p>P.s logic style formula just like CodeQL</p>
 </blockquote>
@@ -438,25 +462,25 @@ bar<span class="token punctuation">.</span>foo <span class="token operator">=</s
 <p><a href="http://10.117.7.201//natsuki/stellaris/-/blob/master/src/main/scala/app/Solver.scala">Solver.scala</a></p>
 <p>detailed explanation:</p>
 <ol>
-<li>
-<p>Types<br>
--. type Allocation(line: Int, clazz: String)</p>
-<p>-. type Pointer = VarPointer(methodName: String, local: String, clazz: String)<br>
-| FieldPointer(alloc: Allocation, fieldName: String)</p>
-<p>-. type CallSite(receiver: VarPointer?, abstracts: Method, args: Array[Pointer], returns: Pointer?, lineNumber: Int)</p>
-</li>
-<li>
-<p>Internal Data Structures</p>
+<li>Types</li>
+</ol>
+<pre data-role="codeBlock" data-info="scala" class="language-scala">  <span class="token keyword keyword-type">type</span> Allocation<span class="token punctuation">(</span>line<span class="token operator">:</span> <span class="token builtin">Int</span><span class="token punctuation">,</span> clazz<span class="token operator">:</span> <span class="token builtin">String</span><span class="token punctuation">)</span>
+
+  <span class="token keyword keyword-type">type</span> Pointer <span class="token operator">=</span> VarPointer<span class="token punctuation">(</span>methodName<span class="token operator">:</span> <span class="token builtin">String</span><span class="token punctuation">,</span> local<span class="token operator">:</span> <span class="token builtin">String</span><span class="token punctuation">,</span> clazz<span class="token operator">:</span> <span class="token builtin">String</span><span class="token punctuation">)</span>
+   <span class="token operator">|</span> FieldPointer<span class="token punctuation">(</span>alloc<span class="token operator">:</span> Allocation<span class="token punctuation">,</span> fieldName<span class="token operator">:</span> <span class="token builtin">String</span><span class="token punctuation">)</span>
+
+  <span class="token keyword keyword-type">type</span> CallSite<span class="token punctuation">(</span>receiver<span class="token operator">:</span> VarPointer<span class="token operator">?</span><span class="token punctuation">,</span> abstracts<span class="token operator">:</span> Method<span class="token punctuation">,</span> args<span class="token operator">:</span> Array<span class="token punctuation">[</span>Pointer<span class="token punctuation">]</span><span class="token punctuation">,</span> returns<span class="token operator">:</span> Pointer<span class="token operator">?</span><span class="token punctuation">,</span> lineNumber<span class="token operator">:</span> <span class="token builtin">Int</span><span class="token punctuation">)</span>
+</pre><ol start="2">
+<li>Internal Data Structures</li>
+</ol>
 <pre data-role="codeBlock" data-info="scala" class="language-scala"><span class="token keyword keyword-val">val</span> reachableMethods <span class="token operator">=</span> mutable<span class="token punctuation">.</span>Set<span class="token punctuation">[</span>SootMethod<span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
 <span class="token keyword keyword-val">val</span> worklist         <span class="token operator">=</span> mutable<span class="token punctuation">.</span>Queue<span class="token punctuation">[</span><span class="token punctuation">(</span>Pointer<span class="token punctuation">,</span> mutable<span class="token punctuation">.</span>Set<span class="token punctuation">[</span>Allocation<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
 <span class="token keyword keyword-val">val</span> callGraph        <span class="token operator">=</span> mutable<span class="token punctuation">.</span>Set<span class="token punctuation">[</span><span class="token punctuation">(</span>CallSite<span class="token punctuation">,</span> SootMethod<span class="token punctuation">)</span><span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
 
 <span class="token keyword keyword-val">val</span> pointerGraph     <span class="token operator">=</span> Graph<span class="token punctuation">[</span>Pointer<span class="token punctuation">,</span> DiEdge<span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
 <span class="token keyword keyword-val">val</span> env              <span class="token operator">=</span> mutable<span class="token punctuation">.</span>Map<span class="token punctuation">[</span>Pointer<span class="token punctuation">,</span> mutable<span class="token punctuation">.</span>Set<span class="token punctuation">[</span>Allocation<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">.</span>withDefaultValue<span class="token punctuation">(</span>mutable<span class="token punctuation">.</span>Set<span class="token punctuation">[</span>Allocation<span class="token punctuation">]</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
-</pre></li>
-<li>
-<p>Solve &amp; Interactive Visualize</p>
-</li>
+</pre><ol start="3">
+<li>Solve &amp; Interactive Visualize</li>
 </ol>
 <h2 class="mume-header" id="fixed-point-theorem-lattice-optional">Fixed Point Theorem &amp; Lattice [Optional]</h2>
 
@@ -464,21 +488,21 @@ bar<span class="token punctuation">.</span>foo <span class="token operator">=</s
 
 <p></p><div class="mathjax-exps">$$`f(x) = y\\ f^2(x) = f(f(x))\\ ...\\ f^n(x) = f(f^{n-1}(x))\\ `$$</div><p></p><p>when</p>
 <p></p><div class="mathjax-exps">$$`f^k(x) = f^{k-1}(x) `$$</div><p></p><p>we say <code>f</code> reach its fixed-point</p>
-<h2 class="mume-header" id="object-sensitive">object sensitive</h2>
+<h2 class="mume-header" id="flow-sensitive">Flow Sensitive</h2>
 
-<h2 class="mume-header" id="context-sensitive-k-cfa">context sensitive &amp; k-CFA</h2>
+<h2 class="mume-header" id="object-sensitive">Object Sensitive</h2>
 
-<h2 class="mume-header" id="flow-sensitive">flow sensitive</h2>
+<h2 class="mume-header" id="context-sensitive-k-cfa">Context Sensitive &amp; k-CFA</h2>
 
 <h2 class="mume-header" id="reference">Reference:</h2>
 
 <ol>
 <li><a href="https://en.wikipedia.org/wiki/Pointer_analysis">https://en.wikipedia.org/wiki/Pointer_analysis</a></li>
+<li><a href="https://pascal-group.bitbucket.io/">https://pascal-group.bitbucket.io/</a></li>
 <li><a href="https://matt.might.net/articles/implementation-of-kcfa-and-0cfa/">https://matt.might.net/articles/implementation-of-kcfa-and-0cfa/</a></li>
 <li><a href="https://www.cs.cmu.edu/~aldrich/courses/15-819O-13sp/resources/pointer.pdf">https://www.cs.cmu.edu/~aldrich/courses/15-819O-13sp/resources/pointer.pdf</a></li>
-<li><a href="https://pascal-group.bitbucket.io/">https://pascal-group.bitbucket.io/</a></li>
 </ol>
-<pre data-role="codeBlock" data-info class="language-"><code></code></pre>
+
       </div>
       
       
