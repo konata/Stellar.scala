@@ -1,11 +1,11 @@
 # Static Analysis & Pointer Analysis Concepts & Fundamental
 
-## Static Analysis Background & Facility [10min]
+## Static Analysis Background & Contraption [10min]
 
-0. Definition
+0. Definition (from wiki)
+   Static program analysis is the analysis of computer software performed without executing any programs
 
 1. IR (Intermediate Representation)
-
    NOT source code NOR AST (to avoid language specific constructs)
 
 2. Soot & TAC / Jimple (Typed TAC)
@@ -50,6 +50,9 @@
 
 ## Pointer Analysis Domains & Concepts [15min]
 
+0. Definition (from wiki)
+   A static code analysis technique that establishes which pointers, or heap references, can point to which ~~variables~~ allocation, It is often a component of more complex analyses such as escape analysis
+
 1. Pointers (Reference Types)
    -. Variables likes `a`
 
@@ -92,25 +95,40 @@
 ## Taxonomy [5min]
 
 ```java
-void foo(src: Source)  {
-   Source bar = src;
-   Log.e(bar.line); // line a1
-   bar = new Source(__LINE__); // line a
-   Log.e(bar.line); // line a2
+class Base {
+   Source spec = new Source(__LINE__) // line d
+   abstract void foo(src: Source)
+   void onResume() {
+      foo(new Source(__LINE__)); // line b
+   }
+
+   void onStart() {
+      foo(new Source(__LINE__)); // line c
+   }
 }
 
-void onResume() {
-   foo(new Source(__LINE__)); // line b
+class One extends Base {
+   void foo(src: Source)  {
+      Source bar = src;
+      Log.e(bar.line); // line a1
+      bar = new Source(__LINE__); // line a
+      Log.e(bar.line); // line a2
+   }
 }
 
-void onStart() {
-   foo(new Source(__LINE__)); // line c
+class Two extends One {
+   void foo(src: Source)  {
+      Source bar = src;
+      Log.e(bar.line); // line t1
+      bar = new Source(__LINE__); // line t
+      Log.e(bar.line); // line t2
+   }
 }
 ```
 
 1. Heap Abstraction (Allocation-Sites) | ...Source Definition?
-2. Context Sensitive | Context Insensitive (\*\*)
-3. Flow Sensitive | Flow Insensitive (\*\*)
+2. Flow Sensitive | Flow Insensitive (\*\*)
+3. Context Sensitive | Context Insensitive (\*\*)
 4. Whole-Program Analysis | On-Demand Driven
 
 ## Pointer Affecting Statements [15min]
@@ -137,6 +155,9 @@ val x = bar.baz(x, y, ...)
 > => TAC
 
 ## Rules [18min]
+
+1. Andersen's Algorithm (Cubic)
+2. Steensgaard's Algorithm (Almost linear)
 
 ### New
 
@@ -250,9 +271,6 @@ val env              = mutable.Map[Pointer, mutable.Set[Allocation]]().withDefau
 
 3. Solve & Interactive Visualize
 
-
-
-
 ## Fixed Point Theorem & Lattice [Optional]
 
 ### iterative algorithm
@@ -272,11 +290,11 @@ f^k(x) = f^{k-1}(x)
 
 we say `f` reach its fixed-point
 
-## object sensitive
+## Flow Sensitive
 
-## context sensitive & k-CFA
+## Object Sensitive
 
-## flow sensitive
+## Context Sensitive & k-CFA
 
 ## Reference:
 

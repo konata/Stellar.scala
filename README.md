@@ -13,7 +13,7 @@ playgrounds for core static analysis concepts utilizing soot &amp; scala
 
 ## Caveats
 
-1. primitive types are not supported, it's simple to extend at your own effort
+1. primitive types are not supported, it's simple to extend with your own effort
 2. static fields store / load & array access are not implemented as they can be modeled as a subset of instance fields
    store / load
 
