@@ -239,16 +239,19 @@ detailed explanation:
 
 2. Internal Data Structures
 
-   ```scala
-   val reachableMethods = mutable.Set[SootMethod]()
-   val worklist         = mutable.Queue[(Pointer, mutable.Set[Allocation])]()
-   val callGraph        = mutable.Set[(CallSite, SootMethod)]()
+```scala
+val reachableMethods = mutable.Set[SootMethod]()
+val worklist         = mutable.Queue[(Pointer, mutable.Set[Allocation])]()
+val callGraph        = mutable.Set[(CallSite, SootMethod)]()
 
-   val pointerGraph     = Graph[Pointer, DiEdge]()
-   val env              = mutable.Map[Pointer, mutable.Set[Allocation]]().withDefaultValue(mutable.Set[Allocation]())
-   ```
+val pointerGraph     = Graph[Pointer, DiEdge]()
+val env              = mutable.Map[Pointer, mutable.Set[Allocation]]().withDefaultValue(mutable.Set[Allocation]())
+```
 
 3. Solve & Interactive Visualize
+
+
+
 
 ## Fixed Point Theorem & Lattice [Optional]
 
