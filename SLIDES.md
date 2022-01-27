@@ -45,8 +45,8 @@
    }
    ```
 
-3. Accuracy vs Efficiency | (Must Analysis & May Analysis) | (False Positive & False Negative)
-4. Fixed Point Theorem & Lattice
+3. Accuracy vs Efficiency | (Must Analysis & May Analysis) |
+4. Fixed Point & Lattice Theory
 
 ## Pointer Analysis Domains & Concepts [15min]
 
@@ -56,7 +56,7 @@
 1. Pointers (Reference Types)
    -. Variables likes `a`
 
-   -. Fields like `foo.bar` && `foo.bar.baz`
+   -. Fields like `o1.bar`
 
    -. model `array-access` as specific fields on that array
 
@@ -157,7 +157,7 @@ val x = bar.baz(x, y, ...)
 ## Rules [18min]
 
 1. Andersen's Algorithm (Cubic)
-2. Steensgaard's Algorithm (Almost linear)
+2. SG's Algorithm (Almost linear)
 
 ### New
 
@@ -239,8 +239,6 @@ a_n \to method_{parameter_{n}}
 returns \gets method_{return}
 ```
 
-> P.s logic style formula just like CodeQL
-
 ## A trivial implementation [25min]
 
 [Solver.scala](http://10.117.7.201//natsuki/stellaris/-/blob/master/src/main/scala/app/Solver.scala)
@@ -252,7 +250,8 @@ detailed explanation:
 ```scala
   type Allocation(line: Int, clazz: String)
 
-  type Pointer = VarPointer(methodName: String, local: String, clazz: String)
+  type Pointer =
+     VarPointer(methodName: String, local: String, clazz: String)
    | FieldPointer(alloc: Allocation, fieldName: String)
 
   type CallSite(receiver: VarPointer?, abstracts: Method, args: Array[Pointer], returns: Pointer?, lineNumber: Int)

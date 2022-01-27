@@ -313,10 +313,10 @@ than <strong>200</strong> possible instructions in Java bytecode.</p>
 }
 </code></pre></li>
 <li>
-<p>Accuracy vs Efficiency | (Must Analysis &amp; May Analysis) | (False Positive &amp; False Negative)</p>
+<p>Accuracy vs Efficiency | (Must Analysis &amp; May Analysis) |</p>
 </li>
 <li>
-<p>Fixed Point Theorem &amp; Lattice</p>
+<p>Fixed Point &amp; Lattice Theory</p>
 </li>
 </ol>
 <h2 class="mume-header" id="pointer-analysis-domains-concepts-15min">Pointer Analysis Domains &amp; Concepts [15min]</h2>
@@ -329,7 +329,7 @@ A static code analysis technique that establishes which pointers, or heap refere
 <li>
 <p>Pointers (Reference Types)<br>
 -. Variables likes <code>a</code></p>
-<p>-. Fields like <code>foo.bar</code> &amp;&amp; <code>foo.bar.baz</code></p>
+<p>-. Fields like <code>o1.bar</code></p>
 <p>-. model <code>array-access</code> as specific fields on that array</p>
 <blockquote>
 <p><code>arr[5] = a; println(arr[3])</code> equals <code>arr.value = a; println(arr.value)</code></p>
@@ -424,7 +424,7 @@ bar<span class="token punctuation">.</span>foo <span class="token operator">=</s
 
 <ol>
 <li>Andersen&apos;s Algorithm (Cubic)</li>
-<li>Steensgaard&apos;s Algorithm (Almost linear)</li>
+<li>SG&apos;s Algorithm (Almost linear)</li>
 </ol>
 <h3 class="mume-header" id="new">New</h3>
 
@@ -454,10 +454,7 @@ bar<span class="token punctuation">.</span>foo <span class="token operator">=</s
    <span class="token keyword keyword-val">val</span> returns <span class="token operator">=</span> receiver<span class="token punctuation">.</span>method<span class="token punctuation">(</span>a1<span class="token punctuation">,</span> <span class="token punctuation">.</span><span class="token punctuation">.</span><span class="token punctuation">.</span> <span class="token punctuation">,</span>an<span class="token punctuation">)</span>
 <span class="token punctuation">}</span>
 </pre><p></p><div class="mathjax-exps">$$`\frac { o_i \in pt(receiver),    \\    method = Dispatch(o_i, method),    \\    o_u \in pt(a_j), 1 \leq j \leq n,    \\    o_{returns} \in pt(method_{return}) } { o_i \in pt(method_{this}),   \\   o_u \in pt(method_{parameter_j}),  1 \leq j \leq n,   \\   o_{returns} \in pt(returns) } `$$</div><p></p><p>for all</p>
-<p></p><div class="mathjax-exps">$$`a_1 \to method_{parameter_{1}} \\ ... \\ a_n \to method_{parameter_{n}} \\ returns \gets method_{return} `$$</div><p></p><blockquote>
-<p>P.s logic style formula just like CodeQL</p>
-</blockquote>
-<h2 class="mume-header" id="a-trivial-implementation-25min">A trivial implementation [25min]</h2>
+<p></p><div class="mathjax-exps">$$`a_1 \to method_{parameter_{1}} \\ ... \\ a_n \to method_{parameter_{n}} \\ returns \gets method_{return} `$$</div><p></p><h2 class="mume-header" id="a-trivial-implementation-25min">A trivial implementation [25min]</h2>
 
 <p><a href="http://10.117.7.201//natsuki/stellaris/-/blob/master/src/main/scala/app/Solver.scala">Solver.scala</a></p>
 <p>detailed explanation:</p>
@@ -466,7 +463,8 @@ bar<span class="token punctuation">.</span>foo <span class="token operator">=</s
 </ol>
 <pre data-role="codeBlock" data-info="scala" class="language-scala">  <span class="token keyword keyword-type">type</span> Allocation<span class="token punctuation">(</span>line<span class="token operator">:</span> <span class="token builtin">Int</span><span class="token punctuation">,</span> clazz<span class="token operator">:</span> <span class="token builtin">String</span><span class="token punctuation">)</span>
 
-  <span class="token keyword keyword-type">type</span> Pointer <span class="token operator">=</span> VarPointer<span class="token punctuation">(</span>methodName<span class="token operator">:</span> <span class="token builtin">String</span><span class="token punctuation">,</span> local<span class="token operator">:</span> <span class="token builtin">String</span><span class="token punctuation">,</span> clazz<span class="token operator">:</span> <span class="token builtin">String</span><span class="token punctuation">)</span>
+  <span class="token keyword keyword-type">type</span> Pointer <span class="token operator">=</span>
+     VarPointer<span class="token punctuation">(</span>methodName<span class="token operator">:</span> <span class="token builtin">String</span><span class="token punctuation">,</span> local<span class="token operator">:</span> <span class="token builtin">String</span><span class="token punctuation">,</span> clazz<span class="token operator">:</span> <span class="token builtin">String</span><span class="token punctuation">)</span>
    <span class="token operator">|</span> FieldPointer<span class="token punctuation">(</span>alloc<span class="token operator">:</span> Allocation<span class="token punctuation">,</span> fieldName<span class="token operator">:</span> <span class="token builtin">String</span><span class="token punctuation">)</span>
 
   <span class="token keyword keyword-type">type</span> CallSite<span class="token punctuation">(</span>receiver<span class="token operator">:</span> VarPointer<span class="token operator">?</span><span class="token punctuation">,</span> abstracts<span class="token operator">:</span> Method<span class="token punctuation">,</span> args<span class="token operator">:</span> Array<span class="token punctuation">[</span>Pointer<span class="token punctuation">]</span><span class="token punctuation">,</span> returns<span class="token operator">:</span> Pointer<span class="token operator">?</span><span class="token punctuation">,</span> lineNumber<span class="token operator">:</span> <span class="token builtin">Int</span><span class="token punctuation">)</span>
